@@ -1,121 +1,103 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
-
 /**
 * Meta Box Certificate Options
-*
 * displays email settings metabox. only dislays on email post
+* @since  1.0.0
+* @version  3.1.0
 */
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 class LLMS_Meta_Box_Email_Settings extends LLMS_Admin_Metabox {
 
-	public static $prefix = '_';
 
 	/**
-	 * outputs the Meta Box on the page
-	 * @param object $post Global WP Post Object
-	 * @param array The array returned by the local metabox_options() function
-	 * @return void
+	 * Configure the metabox settings
+	 * @return   void
+	 * @since    3.0.0
+	 * @version  3.1.4
 	 */
-	public static function output ( $post ) {
-		global $post;
-		parent::new_output( $post, self::metabox_options() );
+	public function configure() {
+
+		$this->id = 'lifterlms-email';
+		$this->title = __( 'Email Settings', 'lifterlms' );
+		$this->screens = array(
+			'llms_email',
+		);
+		$this->priority = 'high';
+
 	}
 
 	/**
 	 * Builds array of metabox options.
 	 * Array is called in output method to display options.
 	 * Appropriate fields are generated based on type.
-	 *
 	 * @return array [md array of metabox fields]
+	 * @since  3.0.0
+	 * @version  3.1.0
 	 */
-	public static function metabox_options() {
-		global $post;
-		wp_nonce_field( 'lifterlms_save_data', 'lifterlms_meta_nonce' );
+	public function get_fields() {
 
-		$email_subject = get_post_meta( $post->ID, '_email_subject', true );
-		$email_heading = get_post_meta( $post->ID, '_email_heading', true );
+		$email_merge = array(
+			'{student_email}' => __( 'Student Email', 'lifterlms' ),
+			'{admin_email}' => __( 'Admin Email', 'lifterlms' ),
+		);
 
-		$meta_fields_email_settings = array(
+		return array(
 			array(
 				'title' 	=> 'Settings',
 				'fields' 	=> array(
 					array(
 						'type'		=> 'text',
-						'label'		=> 'Email Subject',
-						'desc' 		=> 'This will be used for the subject line of your email. The Subject allows mergefields.',
-						'id' 		=> self::$prefix .'email_subject',
-						'class' 	=> 'code',
-						'value' 	=> $email_subject,
+						'label'		=> __( 'Email Subject', 'lifterlms' ),
+						'desc' 		=> __( 'This will be used for the subject line of your email.', 'lifterlms' ) . llms_merge_code_button( '#' . $this->prefix . 'email_subject', false ),
+						'id' 		=> $this->prefix . 'email_subject',
+						'class' 	=> 'code input-full',
+						'value' 	=> '',
 						'desc_class' => 'd-all',
 						'group' 	=> 'top',
 					),
 					array(
 						'type'		=> 'text',
-						'label'		=> 'Email Heading',
-						'desc' 		=> 'This is the heading for your email. It will display above the content.',
-						'id' 		=> self::$prefix . 'email_heading',
-						'class' 	=> 'code',
-						'value' 	=> $email_heading,
+						'label'		=> __( 'Email Heading', 'lifterlms' ),
+						'desc' 		=> __( 'This is the heading for your email. It will display above the content.', 'lifterlms' ),
+						'id' 		=> $this->prefix . 'email_heading',
+						'class' 	=> 'code input-full',
+						'value' 	=> '',
 						'desc_class' => 'd-all',
 						'group' 	=> 'bottom',
 					),
 					array(
-						'type'		=> 'custom-html',
-						'label'		=> '',
-						'desc' 		=> '',
-						'id' 		=> '',
-						'class' 	=> '',
+						'type'		=> 'text',
+						'label'		=> __( 'Email To:', 'lifterlms' ),
+						'desc' 		=> __( 'Separate multiple address with a comma.', 'lifterlms' ) . llms_merge_code_button( '#' . $this->prefix . 'email_to', false, $email_merge ),
+						'default'   => '{student_email}',
+						'id' 		=> $this->prefix . 'email_to',
+						'class' 	=> 'code input-full',
+						'required'  => true,
+						'value' 	=> '',
 						'desc_class' => 'd-all',
-						'group' 	=> 'bottom',
-						'value' 	=> '<p>Use the text editor above to add content to your email.
-										You can include any of the following merge fields to give the email a personal touch.
-										<br>{site_title}
-										<br>{user_login}
-										<br>{site_url}
-										<br>{first_name}
-										<br>{last_name}
-										<br>{email_address}
-										<br>{current_date}</p>
-									',
+					),
+					array(
+						'type'		=> 'text',
+						'label'		=> __( 'Email CC:', 'lifterlms' ),
+						'desc' 		=> __( 'Separate multiple address with a comma.', 'lifterlms' ) . llms_merge_code_button( '#' . $this->prefix . 'email_cc', false, $email_merge ),
+						'id' 		=> $this->prefix . 'email_cc',
+						'class' 	=> 'code input-full',
+						'value' 	=> '',
+						'desc_class' => 'd-all',
+					),
+					array(
+						'type'		=> 'text',
+						'label'		=> __( 'Email BCC:', 'lifterlms' ),
+						'desc' 		=> __( 'Separate multiple address with a comma.', 'lifterlms' ) . llms_merge_code_button( '#' . $this->prefix . 'email_bcc', false, $email_merge ),
+						'id' 		=> $this->prefix . 'email_bcc',
+						'class' 	=> 'code input-full',
+						'value' 	=> '',
+						'desc_class' => 'd-all',
 					),
 				),
 			),
 		);
 
-		if (has_filter( 'llms_meta_fields_email_settings' )) {
-			//Add Fields to the email settings Meta Box
-			$meta_fields_email_settings = apply_filters( 'llms_meta_fields_email_settings', $meta_fields_email_settings );
-		}
-
-		return $meta_fields_email_settings;
-	}
-
-	/**
-	 * Static save method
-	 *
-	 * cleans variables and saves using update_post_meta
-	 *
-	 * @param  int 		$post_id [id of post object]
-	 * @param  object 	$post [WP post object]
-	 *
-	 * @return void
-	 */
-	public static function save( $post_id, $post ) {
-		global $wpdb;
-
-		if ( isset( $_POST['_email_subject'] ) ) {
-			//update email subject textbox
-			$subject = ( llms_clean( $_POST['_email_subject'] ) );
-			update_post_meta( $post_id, '_email_subject', ( $subject === '' ) ? '' : $subject );
-
-		}
-
-		if ( isset( $_POST['_email_heading'] ) ) {
-			//update heading textbox
-			$heading = ( llms_clean( $_POST['_email_heading'] ) );
-			update_post_meta( $post_id, '_email_heading', ( $heading === '' ) ? '' : $heading );
-
-		}
 	}
 
 }

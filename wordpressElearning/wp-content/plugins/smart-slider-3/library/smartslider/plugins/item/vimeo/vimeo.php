@@ -14,6 +14,8 @@ class N2SSPluginItemVimeo extends N2SSPluginItemAbstract
         "height" => 180
     );
 
+    protected $group = 'Media';
+
     public function __construct() {
         $this->_title = n2_x('Vimeo', 'Slide item');
     }
@@ -21,7 +23,7 @@ class N2SSPluginItemVimeo extends N2SSPluginItemAbstract
     function getTemplate($slider) {
         return N2Html::tag('div', array(
             "style" => 'width: 100%; height: 100%; min-height: 50px; background: url({image}) no-repeat 50% 50%; background-size: cover;'
-        ), '<img class="n2-video-play n2-ow" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
+        ), '<img class="n2-video-play n2-ow" alt="" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
     }
 
     function _render($data, $itemId, $slider, $slide) {
@@ -36,7 +38,7 @@ class N2SSPluginItemVimeo extends N2SSPluginItemAbstract
         if (!empty($image)) {
             $style    = 'cursor:pointer; background: url(' . N2ImageHelper::fixed($data->get('image')) . ') no-repeat 50% 50%; background-size: cover';
             $hasImage = 1;
-            $playImage = '<img class="n2-video-play n2-ow" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>';
+            $playImage = '<img class="n2-video-play n2-ow" alt="" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>';
         }
 
         N2JS::addInline('window["' . $slider->elementId . '"].ready(function() {
@@ -53,7 +55,7 @@ class N2SSPluginItemVimeo extends N2SSPluginItemAbstract
     function _renderAdmin($data, $itemId, $slider, $slide) {
         return N2Html::tag('div', array(
             "style" => 'width: 100%; height: 100%; background: url(' . N2ImageHelper::fixed($data->getIfEmpty('image', '$system$/images/placeholder/video.png')) . ') no-repeat 50% 50%; background-size: cover;'
-        ), '<img class="n2-video-play n2-ow" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
+        ), '<img class="n2-video-play n2-ow" alt="" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
     }
 
     function getValues() {

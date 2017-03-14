@@ -8,6 +8,8 @@
         this.slider = slider;
         this.slides = this.slider.realSlides;
 
+        this.loaded = [];
+
         this.lazyLoad = slider.parameters.lazyLoad;
         this.lazyLoadNeighbor = slider.parameters.lazyLoadNeighbor;
 
@@ -18,6 +20,7 @@
          */
         this.backgroundImages = [];
         for (var i = 0; i < this.slides.length; i++) {
+            this.loaded[i] = false;
             var image = this.slides.eq(i).find('.n2-ss-slide-background');
             if (image.length > 0) {
                 this.backgroundImages[i] = new NextendSmartSliderBackgroundImage(i, image, this);
@@ -162,6 +165,13 @@
     };
 
     NextendSmartSliderBackgroundImages.prototype._preLoad = function (i) {
+        if (!this.loaded[i]) {
+            this.slides.eq(i).find('[data-lazysrc]').each(function () {
+                var $this = $(this);
+                $this.attr('src', $this.data('lazysrc'));
+            });
+            this.loaded[i] = true;
+        }
         if (this.backgroundImages[i]) {
             return this.backgroundImages[i].preLoad();
         } else {
@@ -214,7 +224,7 @@
             if (matches.length > 0) {
                 this.currentSrc = matches[1];
             }
-        } else if (image.hasClass('n2-ss-slide-fixed')) {
+        } else if (image.hasClass('n2-ss-slide-fixed') && !((n2const.isPhone && !this.manager.slider.parameters['background.parallax.mobile']) || (n2const.isTablet && !this.manager.slider.parameters['background.parallax.tablet']))) {
             this.mode = 'fixed';
             var matches = image.css('backgroundImage').match(/url\(["]*([^)"]+)["]*\)/i);
             if (matches.length > 0) {
@@ -230,9 +240,9 @@
 
         this.hash = element.data('hash');
 
-        this.desktopSrc = element.data('desktop');
-        this.tabletSrc = element.data('tablet');
-        this.mobileSrc = element.data('mobile');
+        this.desktopSrc = element.data('desktop') || '';
+        this.tabletSrc = element.data('tablet') || '';
+        this.mobileSrc = element.data('mobile') || '';
 
         if (nextend.isRetina) {
             var retina = element.data('desktop-retina');
@@ -502,7 +512,6 @@
                     spinnerCounter.html(Math.round(current / (total + 1) * 100) + '%');
                 }, this));
             }
-
             $.when(this.smartSlider.responsive.ready, this.smartSlider.backgroundImages.load).done($.proxy(this.showSlider, this));
 
         } else {
@@ -555,7 +564,7 @@
 
         NextendSmartSliderLoad.prototype.showSpinner = function (spinnerKey) {
             this.spinnerKey = spinnerKey;
-            this.spinner.appendTo(this.loadingArea);
+            this.spinner.appendTo(this.loadingArea).css('display', '');
         };
 
     NextendSmartSliderLoad.prototype.removeSpinner = function (spinnerKey) {
@@ -753,7 +762,10 @@
             lightbox: [],
             lightboxDeviceImages: [],
             titles: [],
-            descriptions: []
+            descriptions: [],
+            'background.parallax.tablet': 0,
+            'background.parallax.mobile': 0,
+            allowBGImageAttachmentFixed: 1
         }, parameters);
 
         try {
@@ -1064,7 +1076,7 @@
             isSystem = 0;
         }
         if (this.responsive.parameters.focusUser && !isSystem || this.responsive.parameters.focusAutoplay && isSystem) {
-            var top = this.sliderElement.offset().top - this.responsive.verticalOffsetSelectors.height();
+            var top = this.sliderElement.offset().top - (this.responsive.verticalOffsetSelectors.height() || 0);
             if ($(window).scrollTop() != top) {
                 $("html, body").animate({scrollTop: top}, 400, $.proxy(function () {
                     deferred.resolve();
@@ -1356,18 +1368,27 @@
                 new NextendSmartSliderControlTilt(this);
             }
 
-            new NextendSmartSliderControlAutoplay(this, this.parameters.autoplay);
+            this.controlAutoplay = new NextendSmartSliderControlAutoplay(this, this.parameters.autoplay);
 
         }
     };
 
+    NextendSmartSliderAbstract.prototype.getSlideIndex = function (index) {
+        return index;
+    };
+
     NextendSmartSliderAbstract.prototype.slideToID = function (id, direction) {
-        var index = this.slides.index(this.slides.filter('[data-id="' + id + '"]'));
+        var index = this.realSlides.index(this.realSlides.filter('[data-id="' + id + '"]'));
         if (index != -1) {
-            return this.slide(index, direction);
+            return this.slide(this.getSlideIndex(index), direction);
         }
 
         var slider = $('[data-id="' + id + '"]').closest('.n2-ss-slider');
+
+        if (slider.length && this.id == slider.data('ss').id) {
+            return true;
+        }
+
         if (slider.length) {
             var offsetTop = 0;
             if (typeof n2ScrollOffsetSelector !== "undefined") {
@@ -1412,6 +1433,14 @@
         }
         return this.slides.eq(this.currentSlideIndex);
     };
+
+    NextendSmartSliderAbstract.prototype.startAutoplay = function (e) {
+        if (typeof this.controlAutoplay !== 'undefined') {
+            this.controlAutoplay.pauseAutoplayExtraPlayingEnded(e, 'autoplayButton');
+            return true;
+        }
+        return false;
+    }
 
     scope.NextendSmartSliderAbstract = NextendSmartSliderAbstract;
 
@@ -3746,6 +3775,8 @@
 
                     if (Math.abs(diff.x) < 10 && Math.abs(diff.y) < 10) {
                         that.onTap(event);
+                    } else {
+                        nextend.preventClick();
                     }
                 }
             });
@@ -3974,6 +4005,7 @@
     };
 
     Slide.prototype.findLayers = function () {
+        this.$groups = this.$slideElement.find('.n2-ss-layer-group');
         this.$layers = this.$slideElement.find('.n2-ss-layer')
             .each($.proxy(function (i, el) {
                 var $el = $(el);
@@ -3991,7 +4023,8 @@
                     $el.data('parent', false);
                 }
             }, this));
-        this.$parallax = this.$layers.filter('[data-parallax]');
+        this.$animatable = this.$groups.add(this.$layers).filter('[data-animations!=""]');
+        this.$parallax = this.$animatable.filter('[data-parallax]');
     };
 
     Slide.prototype.getLayerResponsiveProperty = function (layer, mode, property) {
@@ -4011,26 +4044,26 @@
 
     Slide.prototype.initResponsiveMode = function () {
         this.slider.sliderElement.on('SliderDeviceOrientation', $.proxy(function (e, modes) {
-                var mode = modes.device + modes.orientation.toLowerCase();
-                this.currentMode = mode;
-                this.$layers.each($.proxy(function (i, el) {
-                    var layer = $(el),
-                        show = layer.data(mode),
-                        parent = layer.data('parent');
-                    if ((typeof show == 'undefined' || parseInt(show))) {
-                        if (this.getLayerProperty(layer, 'adaptivefont')) {
-                            layer.css('font-size', (16 * this.getLayerResponsiveProperty(layer, this.currentMode, 'fontsize') / 100) + 'px');
-                        } else {
-                            layer.css('font-size', this.getLayerResponsiveProperty(layer, this.currentMode, 'fontsize') + '%');
-                        }
-                        layer.data('shows', 1);
-                        layer.css('display', 'block');
+            var mode = modes.device + modes.orientation.toLowerCase();
+            this.currentMode = mode;
+            this.$layers.each($.proxy(function (i, el) {
+                var layer = $(el),
+                    show = layer.data(mode),
+                    parent = layer.data('parent');
+                if ((typeof show == 'undefined' || parseInt(show))) {
+                    if (this.getLayerProperty(layer, 'adaptivefont')) {
+                        layer.css('font-size', (16 * this.getLayerResponsiveProperty(layer, this.currentMode, 'fontsize') / 100) + 'px');
                     } else {
-                        layer.data('shows', 0);
-                        layer.css('display', 'none');
+                        layer.css('font-size', this.getLayerResponsiveProperty(layer, this.currentMode, 'fontsize') + '%');
                     }
-                }, this));
-            }, this))
+                    layer.data('shows', 1);
+                    layer.css('display', 'block');
+                } else {
+                    layer.data('shows', 0);
+                    layer.css('display', 'none');
+                }
+            }, this));
+        }, this))
             .on('SliderResize', $.proxy(function (e, ratios, responsive) {
 
                 var dimensions = responsive.responsiveDimensions;
@@ -4222,7 +4255,7 @@
 
     scope.NextendSmartSliderSlide = Slide;
 
-    function SlideLayers(slide, $layers, mode, ratios) {
+    function SlideAnimatable(slide, $layers, mode, ratios) {
         this.layerAnimations = [];
         this.slide = slide;
         slide.$slideElement.off(".n2-ss-animations");
@@ -4232,13 +4265,13 @@
         }
     };
 
-    SlideLayers.prototype.refresh = function (ratios) {
+    SlideAnimatable.prototype.refresh = function (ratios) {
         for (var i = 0; i < this.layerAnimations.length; i++) {
             this.layerAnimations[i].refresh(ratios);
         }
     };
 
-    SlideLayers.prototype.getTimeline = function () {
+    SlideAnimatable.prototype.getTimeline = function () {
         var timeline = new NextendTimeline({
             paused: 1
         });
@@ -4250,7 +4283,7 @@
         }
         return timeline;
     };
-    scope.NextendSmartSliderSlideLayers = SlideLayers;
+    scope.NextendSmartSliderSlideAnimatables = SlideAnimatable;
 
 })(n2, window);
 (function ($, scope, undefined) {
@@ -4261,6 +4294,8 @@
     function NextendSmartSliderResponsive(slider, parameters) {
         this.disableTransitions = false;
         this.disableTransitionsTimeout = null;
+        this.lastClientHeight = 0;
+        this.lastOrientation = 0;
 
         if (slider.isAdmin) {
             this.doResize = NextendThrottle(this.doResize, 50);
@@ -4444,7 +4479,6 @@
                 }
             }
         }
-
         this.verticalOffsetSelectors = $(this.parameters.verticalOffsetSelectors);
 
         n2c.log('Responsive: Store defaults');
@@ -4476,7 +4510,10 @@
             }
 
             if (this.parameters.maximumSlideWidthConstrainHeight) {
-                this.parameters.maximumHeightRatio = this.parameters.maximumSlideWidthRatio;
+                this.parameters.maximumHeightRatio = $.extend({}, this.parameters.maximumSlideWidthRatio);
+                for (var k in this.parameters.maximumHeightRatio) {
+                    this.parameters.maximumHeightRatio[k] *= this.parameters.verticalRatioModifiers[k];
+                }
             }
         }
 
@@ -4791,6 +4828,7 @@
                 this.containerElement.css(nextend.rtl.marginLeft, -outerElOffset[nextend.rtl.left] - parseInt(outerEl.css('paddingLeft')) - parseInt(outerEl.css('borderLeftWidth'))).width(windowWidth);
             }
         }
+
         var ratio = this.containerElementPadding.width() / this.getOuterWidth();
 
 
@@ -4844,7 +4882,32 @@
 
         if (!this.slider.isAdmin) {
             if (this.parameters.type == 'fullpage') {
-                this.parameters.maximumHeightRatio[this.getDeviceModeOrientation()] = this.parameters.minimumHeightRatio = ((document.documentElement.clientHeight || document.body.clientHeight) - this.getVerticalOffsetHeight()) / this.responsiveDimensions.startHeight;
+                var clientHeight = 0;
+                if ((/Android|iPhone|iPad|iPod|BlackBerry/i).test(navigator.userAgent || navigator.vendor || window.opera)) {
+                    var isOrientationChanged = false;
+                    if (Math.abs(window.orientation) == 90) {
+                        // landscape
+                        clientHeight = Math.min(screen.width, window.innerHeight);
+                        if (this.lastOrientation != 90) {
+                            isOrientationChanged = true;
+                            this.lastOrientation = 90;
+                        }
+                    } else {
+                        clientHeight = Math.min(screen.height, window.innerHeight);
+                        if (this.lastOrientation != 0) {
+                            isOrientationChanged = true;
+                            this.lastOrientation = 0;
+                        }
+                    }
+                    if (!isOrientationChanged && Math.abs(clientHeight - this.lastClientHeight) < 100) {
+                        clientHeight = this.lastClientHeight;
+                    } else {
+                        this.lastClientHeight = clientHeight;
+                    }
+                } else {
+                    clientHeight = document.documentElement.clientHeight || document.body.clientHeight;
+                }
+                this.parameters.maximumHeightRatio[this.getDeviceModeOrientation()] = this.parameters.minimumHeightRatio = (clientHeight - this.getVerticalOffsetHeight()) / this.responsiveDimensions.startHeight;
             }
         }
 
@@ -4868,11 +4931,7 @@
                 });
             }
         }
-        /*
-         if (this.parameters.type == 'adaptive') {
-         this._doResize(this.parameters.sliderWidthToDevice[this.normalizedMode] / this.parameters.sliderWidthToDevice.desktopPortrait);
-         } else {
-         */
+
         var zeroRatio = this.parameters.sliderWidthToDevice[this.normalizedMode] / this.parameters.sliderWidthToDevice.desktopPortrait;
         if (!this.parameters.downscale && ratio < zeroRatio) {
             ratio = zeroRatio;
@@ -4880,7 +4939,6 @@
             ratio = zeroRatio;
         }
         this._doResize(ratio, timeline, nextSlideIndex, duration);
-        //}
 
         if (this.slider.parameters.align == 'center') {
             this.alignElement.css('maxWidth', this.responsiveDimensions.slider.width);
@@ -4988,6 +5046,9 @@
             } else {
                 if (!this.parameters.constrainRatio) {
                     ratios.slideW = ratios.w;
+                    if (this.parameters.maximumSlideWidthRatio[deviceModeOrientation] > 0 && ratios.slideW > this.parameters.maximumSlideWidthRatio[deviceModeOrientation]) {
+                        ratios.slideW = this.parameters.maximumSlideWidthRatio[deviceModeOrientation];
+                    }
                     ratios.slideH = ratios.h;
                 } else {
                     ratios.slideH = Math.min(ratios.slideH, ratios.h);
@@ -5039,20 +5100,34 @@
         }
     };
 
-    NextendSmartSliderResponsive.prototype.setMode = function (newMode) {
+    NextendSmartSliderResponsive.prototype.setMode = function (newMode, responsive) {
         var orientation;
         if (this.orientationMode == NextendSmartSliderResponsive.OrientationMode.ADMIN_PORTRAIT) {
             orientation = NextendSmartSliderResponsive.DeviceOrientation.PORTRAIT;
         } else if (this.orientationMode == NextendSmartSliderResponsive.OrientationMode.ADMIN_LANDSCAPE) {
             orientation = NextendSmartSliderResponsive.DeviceOrientation.LANDSCAPE;
         }
-        var width = this.parameters.sliderWidthToDevice[newMode + NextendSmartSliderResponsive._DeviceOrientation[orientation]];
-        width = nextend.smallestZoom + (((this.parameters.sliderWidthToDevice['desktopPortrait'] - nextend.smallestZoom)) / 50) * Math.floor((width - nextend.smallestZoom) / (((this.parameters.sliderWidthToDevice['desktopPortrait'] - nextend.smallestZoom)) / 50));
-        this.setSize(width);
-        if (this.containerElement.width() > width) {
-            // We have to find a proper value for the zoom slider - backend only
-            width = this.parameters.sliderWidthToDevice[newMode + NextendSmartSliderResponsive._DeviceOrientation[orientation]] - (this.parameters.sliderWidthToDevice['desktopPortrait'] - nextend.smallestZoom) / 50;
+        if (this == responsive) {
+            var width = this.parameters.sliderWidthToDevice[newMode + NextendSmartSliderResponsive._DeviceOrientation[orientation]];
+            width = nextend.smallestZoom + (((this.parameters.sliderWidthToDevice['desktopPortrait'] - nextend.smallestZoom)) / 50) * Math.floor((width - nextend.smallestZoom) / (((this.parameters.sliderWidthToDevice['desktopPortrait'] - nextend.smallestZoom)) / 50));
+
+            if (newMode == 'mobile') {
+                switch (NextendSmartSliderResponsive._DeviceOrientation[orientation]) {
+                    case 'Portrait':
+                        width = Math.max(nextend.smallestZoom, 380);
+                        break;
+                    case 'Landscape':
+                        width = Math.max(nextend.smallestZoom, 568);
+                        break;
+                }
+            }
+
             this.setSize(width);
+            if (this.containerElement.width() > width) {
+                // We have to find a proper value for the zoom slider - backend only
+                width = this.parameters.sliderWidthToDevice[newMode + NextendSmartSliderResponsive._DeviceOrientation[orientation]] - (this.parameters.sliderWidthToDevice['desktopPortrait'] - nextend.smallestZoom) / 50;
+                this.setSize(width);
+            }
         }
     };
 
@@ -5622,22 +5697,22 @@
 
     NextendSmartSliderVimeoItem.prototype.ready = function (callback) {
         if (NextendSmartSliderVimeoItem.vimeoDeferred === null) {
-            NextendSmartSliderVimeoItem.vimeoDeferred = $.getScript((window.location.protocol == "https:" ? 'https://secure-a.vimeocdn.com/js/froogaloop2.min.js' : 'http://a.vimeocdn.com/js/froogaloop2.min.js'));
+            NextendSmartSliderVimeoItem.vimeoDeferred = $.getScript('https://player.vimeo.com/api/player.js');
         }
         NextendSmartSliderVimeoItem.vimeoDeferred.done(callback);
     };
 
     NextendSmartSliderVimeoItem.prototype.initVimeoPlayer = function () {
-        var playerElement = n2('<iframe id="' + this.playerId + '_video" src="//player.vimeo.com/video/' + this.parameters.vimeocode + '?api=1&autoplay=0&player_id=' + this.playerId +
-            '_video&title=' + this.parameters.title + '&byline=' + this.parameters.byline + '&portrait=' + this.parameters.portrait + '&color=' + this.parameters.color +
-            '&loop=' + this.parameters.loop + '" style="position: absolute; top:0; left: 0; width: 100%; height: 100%;" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>');
+        var playerElement = n2('<iframe id="' + this.playerId + '_video" src="https://player.vimeo.com/video/' + this.parameters.vimeocode + '?autoplay=0&' +
+            '_video&title=' + this.parameters.title + '&byline=' + this.parameters.byline + "&background=" + this.parameters.background + '&portrait=' + this.parameters.portrait + '&color=' + this.parameters.color +
+            '&loop=' + this.parameters.loop + ( this.parameters.quality == '-1' ? '' : '&quality=' + this.parameters.quality ) + '" style="position: absolute; top:0; left: 0; width: 100%; height: 100%;" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>');
         $("#" + this.playerId).append(playerElement);
 
         this.isStatic = playerElement.closest('.n2-ss-static-slide').length;
 
-        this.player = $f(playerElement[0]);
-        this.playerElement = $(this.player.element);
-        this.player.addEvent('ready', $.proxy(this.onReady, this));
+        this.playerElement = playerElement;
+        this.player = new Vimeo.Player(playerElement[0]);
+        this.player.ready().then($.proxy(this.onReady, this));
     };
 
     NextendSmartSliderVimeoItem.prototype.onReady = function () {
@@ -5655,18 +5730,18 @@
         }
         var layer = this.playerElement.parent().parent();
 
-        this.player.addEvent('play', $.proxy(function () {
+        this.player.on('play', $.proxy(function () {
             if (!this.isStatic) {
                 this.slider.sliderElement.trigger('mediaStarted', this.playerId);
             }
             layer.triggerHandler('n2play');
         }, this));
 
-        this.player.addEvent('pause', $.proxy(function () {
+        this.player.on('pause', $.proxy(function () {
             layer.triggerHandler('n2pause');
         }));
 
-        this.player.addEvent('finish', $.proxy(function () {
+        this.player.on('ended', $.proxy(function () {
             if (!this.isStatic) {
                 this.slider.sliderElement.trigger('mediaEnded', this.playerId);
             }
@@ -5734,19 +5809,19 @@
 
     NextendSmartSliderVimeoItem.prototype.play = function () {
         this.slider.sliderElement.trigger('mediaStarted', this.playerId);
-        this.player.api("play");
+        this.player.play();
     };
 
     NextendSmartSliderVimeoItem.prototype.pause = function () {
-        this.player.api("pause");
+        this.player.pause();
     };
 
     NextendSmartSliderVimeoItem.prototype.reset = function () {
-        this.player.api("seekTo", 0);
+        this.player.setCurrentTime(0);
     };
 
     NextendSmartSliderVimeoItem.prototype.setVolume = function (volume) {
-        this.player.api('setVolume', volume);
+        this.player.setVolume(volume);
     };
 
     scope.NextendSmartSliderVimeoItem = NextendSmartSliderVimeoItem;
@@ -5902,6 +5977,8 @@
 
         this.slideIndex = this.slider.findSlideIndexByElement(this.playerElement);
         if (this.parameters.center == 1) {
+            this.playerElement.parent().css('overflow', 'hidden');
+
             this.onResize();
 
             this.slider.sliderElement.on('SliderResize', $.proxy(this.onResize, this))
@@ -5927,10 +6004,9 @@
                     this.pause();
                 }
             }, this));
-            if (this.parameters.reset) {
+            if (parseInt(this.parameters.reset)) {
                 this.slider.sliderElement.on("mainAnimationComplete", $.proxy(function (e, mainAnimation, previousSlideIndex, currentSlideIndex, isSystem) {
-                    if (currentSlideIndex != this.slideIndex && this.player.getCurrentTime() != 0) {
-                        this.player.pauseVideo();
+                    if (currentSlideIndex != this.slideIndex) {
                         this.player.seekTo(0);
                     }
                 }, this));

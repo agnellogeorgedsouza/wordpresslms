@@ -1,0 +1,98 @@
+=== Elementor Addon Elements ===
+Contributors: webtechstreet
+Tags: page-builder, elementor
+Requires at least: 4.4
+Tested up to: 4.7.2
+Stable tag: 4.7.2
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+Add new elements to Elementor page builder.
+
+== Description ==
+
+This plugin adds new elements/widgets to Elementor Page Builder.
+
+For more details and demo check our official site http://www.elementoraddons.com/
+
+Current Addon Elements:
+
+* Flip Box
+* Text Separator 
+* Price Table
+* Post List
+* Shape Separator (Check faq for tips)
+* Animated Text (New)
+
+Many more elements coming soon...
+
+Note: This plugin is an addon of Elementor Page Builder (https://wordpress.org/plugins/elementor/) and will only work with Elementor Page Builder installed.
+
+== Installation ==
+
+1. Upload the plugin files to the `/wp-content/plugins/plugin-name` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress
+
+
+== Frequently Asked Questions ==
+
+= Where can i find the new element added =
+
+New elements are added at the end of default elementor elements.
+
+= How to set shape separator as full width. =
+Setting up separator can be little tricky for you initially.
+Under section settings set
+Stretch Section => yes
+Content width => full width
+Column gap => No gap
+
+== Screenshots ==
+
+1. /assets/screenshot-1.png
+2. /assets/screenshot-2.png
+3. /assets/screenshot-3.png
+3. /assets/screenshot-4.png
+
+== Changelog ==
+
+= 0.4 =
+* Added gradient background option in Flipbox, Pricetable & Animated Text
+* Fix: css issue in Post List on mobile view.
+
+= 0.3 =
+* New Element - Animated Text
+* Fixed issue: icons missing after elementor 1.0 release.
+* Fixed issue: now uses except in post list element if available.
+
+
+= 0.2.3 =
+* Added more controls for price box section of Price Table
+* Fixed IE11 animation issue in flipbox.
+
+
+= 0.2.2 =
+* Added responsive controls to Post List
+* Corrected typo in Post List controls
+
+
+
+= 0.2.1 =
+* Fixed bug found in previous release. It broke text separator.
+ 
+= 0.2.0 =
+* Fixed issue with icon css in various elements.
+* Fixed issue - text separator overlapping content below when aligned left or right.
+* Added new element Post List
+* Added new element Shape Separator
+
+= 0.1.1 =
+* Fixed php notices issue while using with WP_DEBUG true.
+* Added width and align parameters to Text Separator. Now control the width and alignment of Text Separator.
+
+= 0.1 =
+* Introducing new element - FLIP BOX
+* Fixed issue with price table border radius and background.
+
+= 0.0.1 =
+* Initial Launch with Text Separator element and Price Table

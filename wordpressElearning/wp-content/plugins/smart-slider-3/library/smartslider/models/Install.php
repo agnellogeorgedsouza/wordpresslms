@@ -5,39 +5,47 @@ class N2SmartsliderInstallModel extends N2Model {
 
     private static $sql = array(
         "CREATE TABLE IF NOT EXISTS `#__nextend2_smartslider3_generators` (
-  `id`     INT(11)      NOT NULL AUTO_INCREMENT,
-  `group`  VARCHAR(254) NOT NULL,
-  `type`   VARCHAR(254) NOT NULL,
-  `params` TEXT         NOT NULL,
-  PRIMARY KEY (`id`)
-)
-  DEFAULT CHARSET = utf8;",
+          `id`     INT(11)      NOT NULL AUTO_INCREMENT,
+          `group`  VARCHAR(254) NOT NULL,
+          `type`   VARCHAR(254) NOT NULL,
+          `params` TEXT         NOT NULL,
+          PRIMARY KEY (`id`)
+        ) DEFAULT CHARSET = utf8;",
+
         "CREATE TABLE IF NOT EXISTS `#__nextend2_smartslider3_sliders` (
-  `id`     INT(11)      NOT NULL AUTO_INCREMENT,
-  `title`  VARCHAR(100) NOT NULL,
-  `type`   VARCHAR(30)  NOT NULL,
-  `params` MEDIUMTEXT   NOT NULL,
-  `time`   DATETIME     NOT NULL,
-  PRIMARY KEY (`id`)
-)
-  DEFAULT CHARSET = utf8;",
+          `id`     INT(11)      NOT NULL AUTO_INCREMENT,
+          `title`  VARCHAR(100) NOT NULL,
+          `type`   VARCHAR(30)  NOT NULL,
+          `params` MEDIUMTEXT   NOT NULL,
+          `time`   DATETIME     NOT NULL,
+          `thumbnail` VARCHAR( 255 ) NOT NULL,
+          `ordering` INT NOT NULL DEFAULT '0',
+          PRIMARY KEY (`id`)
+        ) DEFAULT CHARSET = utf8;",
+
+        "CREATE TABLE IF NOT EXISTS `#__nextend2_smartslider3_sliders_xref` (
+          `group_id` int(11) NOT NULL,
+          `slider_id` int(11) NOT NULL,
+          `ordering` int(11) NOT NULL DEFAULT '0',
+          PRIMARY KEY (`group_id`,`slider_id`)
+        ) DEFAULT CHARSET = utf8;",
+
         "CREATE TABLE IF NOT EXISTS `#__nextend2_smartslider3_slides` (
-  `id`           INT(11)      NOT NULL AUTO_INCREMENT,
-  `title`        VARCHAR(200) NOT NULL,
-  `slider`       INT(11)      NOT NULL,
-  `publish_up`   DATETIME     NOT NULL,
-  `publish_down` DATETIME     NOT NULL,
-  `published`    TINYINT(1)   NOT NULL,
-  `first`        INT(11)      NOT NULL,
-  `slide`        LONGTEXT,
-  `description`  TEXT         NOT NULL,
-  `thumbnail`    VARCHAR(255) NOT NULL,
-  `params`       TEXT         NOT NULL,
-  `ordering`     INT(11)      NOT NULL,
-  `generator_id` INT(11)      NOT NULL,
-  PRIMARY KEY (`id`)
-)
-  DEFAULT CHARSET = utf8;",
+          `id`           INT(11)      NOT NULL AUTO_INCREMENT,
+          `title`        VARCHAR(200) NOT NULL,
+          `slider`       INT(11)      NOT NULL,
+          `publish_up`   DATETIME     NOT NULL,
+          `publish_down` DATETIME     NOT NULL,
+          `published`    TINYINT(1)   NOT NULL,
+          `first`        INT(11)      NOT NULL,
+          `slide`        LONGTEXT,
+          `description`  TEXT         NOT NULL,
+          `thumbnail`    VARCHAR(255) NOT NULL,
+          `params`       TEXT         NOT NULL,
+          `ordering`     INT(11)      NOT NULL,
+          `generator_id` INT(11)      NOT NULL,
+          PRIMARY KEY (`id`)
+        ) DEFAULT CHARSET = utf8;",
 
         "UPDATE `#__nextend2_section_storage` SET `value` = 1 WHERE `application` LIKE 'smartslider' AND `section` LIKE 'sliderChanged';"
 
@@ -56,6 +64,14 @@ class N2SmartsliderInstallModel extends N2Model {
             $this->db->query($this->db->parsePrefix($query));
         }
 
+        if (!$this->hasColumn('#__nextend2_smartslider3_sliders', 'thumbnail')) {
+            $this->db->query($this->db->parsePrefix("ALTER TABLE `#__nextend2_smartslider3_sliders` ADD `thumbnail` VARCHAR( 255 ) NOT NULL"));
+        }
+
+        if (!$this->hasColumn('#__nextend2_smartslider3_sliders', 'ordering')) {
+            $this->db->query($this->db->parsePrefix("ALTER TABLE `#__nextend2_smartslider3_sliders` ADD `ordering` INT NOT NULL DEFAULT '0'"));
+        }
+
         N2Loader::import('install', 'smartslider.platform');
 
         $sliders = $this->db->queryAll($this->db->parsePrefix('SELECT * FROM #__nextend2_smartslider3_sliders LIMIT 1'));
@@ -64,5 +80,12 @@ class N2SmartsliderInstallModel extends N2Model {
                 $this->db->query($this->db->parsePrefix($query));
             }
         }
+
+        N2Settings::set('n2_ss3_version', N2SS3::$version);
+    }
+
+
+    private function hasColumn($table, $col) {
+        return !!$this->db->queryRow($this->db->parsePrefix("SHOW COLUMNS FROM `" . $table . "` LIKE '" . $col . "'"));
     }
 }

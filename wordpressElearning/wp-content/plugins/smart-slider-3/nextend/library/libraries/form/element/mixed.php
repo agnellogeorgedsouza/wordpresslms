@@ -1,8 +1,7 @@
 <?php
 N2Loader::import('libraries.form.element.hidden');
 
-class N2ElementMixed extends N2Element
-{
+class N2ElementMixed extends N2Element {
 
     var $_separator = '|*|';
 

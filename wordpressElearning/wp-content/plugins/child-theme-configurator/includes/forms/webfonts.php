@@ -5,7 +5,7 @@ $ctcpage = apply_filters( 'chld_thm_cfg_admin_page', CHLD_THM_CFG_MENU );
 ?>
 
 <div id="import_options_panel" 
-        class="ctc-option-panel<?php echo 'import_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>" <?php echo $hidechild; ?>>
+        class="ctc-option-panel<?php $this->maybe_disable(); echo 'import_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>">
   <form id="ctc_import_form" method="post" action=""><!-- ?page=<?php echo $ctcpage; ?>" -->
     <?php wp_nonce_field( apply_filters( 'chld_thm_cfg_action', 'ctc_update' ) ); ?>
     <div class="ctc-input-row clearfix" id="ctc_child_imports_row">
@@ -22,12 +22,10 @@ $ctcpage = apply_filters( 'chld_thm_cfg_admin_page', CHLD_THM_CFG_MENU );
       </div>
       <div class="ctc-input-cell-wide">
         <textarea id="ctc_child_imports" name="ctc_child_imports" wrap="off"><?php 
-    if ( !empty( $imports ) ):
-        foreach ( $imports as $import ):
+        foreach ( $this->css()->get_prop( 'imports' ) as $import ):
             echo esc_textarea( $import . ';' . LF );
         endforeach; 
-    endif; ?>
-</textarea>
+            ?></textarea>
       </div>
     </div>
   </form>

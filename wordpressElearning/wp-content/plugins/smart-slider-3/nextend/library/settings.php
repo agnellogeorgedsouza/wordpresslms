@@ -16,7 +16,8 @@ class N2Settings {
             'protocol-relative'        => 1,
             'show-joomla-admin-footer' => 0,
             'curl'                     => 1,
-            'curl-clean-proxy'         => 0
+            'curl-clean-proxy'         => 0,
+            'css-mode'                 => 'normal'
         );
         if (!defined('NEXTEND_INSTALL')) {
             global $wpdb;

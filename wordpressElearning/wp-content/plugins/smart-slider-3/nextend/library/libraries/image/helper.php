@@ -77,7 +77,7 @@ class N2ImageHelperAbstract {
                     ],
                     title: "' . n2_('Images') . '",
                     controlsClass: "n2-modal-controls-side",
-                    controls: [\'<a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">' . n2_('Select') . '</a>\'],
+                    controls: [\'<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' . n2_('Select') . '</a>\'],
                     content: \'\',
                     fn: {
                         show: function () {

@@ -1,90 +1,40 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { exit; }
-
 /**
  * Admin Assets Class
  *
  * Sets up admin menu items.
- *
- * @author codeBOX
- * @project lifterLMS
+ * @since   1.0.0
+ * @version 3.2.0
  */
+
+if ( ! defined( 'ABSPATH' ) ) { exit; }
+
 class LLMS_Admin_Menus {
 
 	/**
 	 * Constructor
-	 *
-	 * executes menu setup functions on admin_menu
+	 * @since   1.0.0
+	 * @version 3.0.0
 	 */
 	public function __construct() {
 
-		//resort sub menu items
 		add_filter( 'custom_menu_order', array( $this, 'submenu_order' ) );
-
 		add_action( 'admin_menu', array( $this, 'display_admin_menu' ) );
-		add_action( 'admin_menu', array( $this, 'display_settings_menu' ) );
-		add_action( 'admin_menu', array( $this, 'display_analytics_menu' ) );
-		add_action( 'admin_menu', array( $this, 'display_students_menu' ) );
-		add_action( 'admin_menu', array( $this, 'display_system_report_menu' ) );
+
 	}
 
 	/**
-	 * Custom LifterLMS sub menu order
-	 * All new sub menu items need to be added to this method
-	 * @param  [array] $menu_ord [sub menu array]
-	 * @return [array]           [modified sub menu array]
-	 * @version  2.7.7
+	 * Remove the default menu page from the submenu
+	 * @param  array
+	 * @return array
+	 * @since   1.0.0
+	 * @version 3.2.0
 	 */
 	public function submenu_order( $menu_ord ) {
 		global $submenu;
 
 		if ( isset( $submenu['lifterlms'] ) ) {
-
-			 // anything that doesn't get caught because of l18n will start here
-			 // we'll increment everytime the default is used
-			 // so we ensure we get everything
-			$default = 12;
-
-			$arr = array();
-			foreach ( $submenu['lifterlms'] as $sm ) {
-				switch ( $sm[0] ) {
-
-					case 'Settings':
-					case __( 'Settings', 'lifterlms' ):	 	$i = 0;  break;
-					case 'Analytics':
-					case __( 'Analytics', 'lifterlms' ):	$i = 1;  break;
-					case 'Students':
-					case __( 'Students', 'lifterlms' ):	 	$i = 2;  break;
-					case 'Emails':
-					case __( 'Emails', 'lifterlms' ):		$i = 3;  break;
-					case 'Engagements':
-					case __( 'Engagements', 'lifterlms' ):	$i = 4;  break;
-					case 'Achievements':
-					case __( 'Achievements', 'lifterlms' ): $i = 5;  break;
-					case 'Certificates':
-					case __( 'Certificates', 'lifterlms' ): $i = 6;  break;
-					case 'Reviews':
-					case __( 'Reviews', 'lifterlms' ):		$i = 7;  break;
-					case 'Orders':
-					case __( 'Orders', 'lifterlms' ):		$i = 8;  break;
-					case 'Coupons':
-					case __( 'Coupons', 'lifterlms' ):		$i = 9;  break;
-					case 'Vouchers':
-					case __( 'Vouchers', 'lifterlms' ):	 	$i = 10; break;
-					case 'System Report':
-					case __( 'System Report', 'lifterlms' ):$i = 11; break;
-					default 							   :$i = $default; $default++; break;
-				}
-
-				$arr[ $i ] = $sm;
-			}
-
-			ksort( $arr );
-
-			array_merge( $arr, $submenu['lifterlms'] );
-
-			$submenu['lifterlms'] = $arr;
-
+			unset( $submenu['lifterlms'][0] );
 		}
 
 		return $menu_ord;
@@ -92,11 +42,9 @@ class LLMS_Admin_Menus {
 
 	/**
 	 * Admin Menu
-	 *
-	 * Sets main (parent) lifterLMS menu item
-	 * TODO: Remove llms_homepage function and replace with actual page reference like settings.
-	 *
 	 * @return void
+	 * @since   1.0.0
+	 * @version 3.3.0
 	 */
 	public function display_admin_menu() {
 
@@ -104,43 +52,34 @@ class LLMS_Admin_Menus {
 
 		if ( current_user_can( apply_filters( 'lifterlms_admin_menu_access', 'manage_options' ) ) ) {
 
-			// ensure we don't overwrite an existing menu item
-			$pos = 51;
+			$menu[51] = array( '', 'read', 'llms-separator','','wp-menu-separator' );
 
-			while ( true ) {
+			add_menu_page( 'lifterlms', 'LifterLMS', apply_filters( 'lifterlms_admin_settings_access', 'manage_options' ), 'lifterlms', array( $this, 'settings_page_init' ), plugin_dir_url( LLMS_PLUGIN_FILE ) . 'assets/images/lifterLMS-wp-menu-icon.png', 51 );
 
-				if ( isset( $menu[ $pos ] ) ) {
-					$pos++;
-				} else {
-					break;
-				}
+			add_submenu_page( 'lifterlms', __( 'LifterLMS Settings', 'lifterlms' ), __( 'Settings', 'lifterlms' ), apply_filters( 'lifterlms_admin_settings_access', 'manage_options' ), 'llms-settings', array( $this, 'settings_page_init' ) );
 
-			}
+			add_submenu_page( 'lifterlms', __( 'LifterLMS Reporting', 'lifterlms' ), __( 'Reporting', 'lifterlms' ), apply_filters( 'lifterlms_admin_reporting_access', 'manage_options' ), 'llms-reporting', array( $this, 'reporting_page_init' ) );
 
-			$menu[ $pos ] = array( '', 'read', 'llms-separator','','wp-menu-separator' );
+			add_submenu_page( 'lifterlms', __( 'LifterLMS Import', 'lifterlms' ), __( 'Import', 'lifterlms' ), apply_filters( 'lifterlms_admin_import_access', 'manage_options' ), 'llms-import', array( $this, 'import_page_init' ) );
 
-			add_menu_page( 'lifterlms', 'LifterLMS', apply_filters( 'lifterlms_admin_settings_access', 'manage_options' ), 'lifterlms', 'llms_homepage', plugin_dir_url( LLMS_PLUGIN_FILE ) . 'assets/images/lifterLMS-wp-menu-icon.png', $pos );
-			function llms_homepage() {}
+			add_submenu_page( 'lifterlms', __( 'LifterLMS System report', 'lifterlms' ), __( 'System Report', 'lifterlms' ), apply_filters( 'lifterlms_admin_system_report_access', 'manage_options' ), 'llms-system-report', array( $this, 'system_report_page_init' ) );
 
 		}
 
 	}
 
 	/**
-	 * Settings Menu Item
-	 *
-	 * Sub menu item to Admin Menu
-	 *
-	 * @return void
+	 * Outputs the LifterLMS Importer Screen HTML
+	 * @return   void
+	 * @since    3.3.0
+	 * @version  3.3.0
 	 */
-	public function display_settings_menu() {
-
-		$settings = add_submenu_page( 'lifterlms', 'LifterLMS Settings', __( 'Settings', 'lifterlms' ), apply_filters( 'lifterlms_admin_settings_access', 'manage_options' ), 'llms-settings', array( $this, 'settings_page_init' ) );
+	public function import_page_init() {
+		LLMS_Admin_Import::output();
 	}
 
 	/**
-	 * Init LLMS_Admin_Settings
-	 *
+	 * Output the HTLM for admin settings screens
 	 * @return void
 	 */
 	public function settings_page_init() {
@@ -149,64 +88,19 @@ class LLMS_Admin_Menus {
 	}
 
 	/**
-	 * Analytics Menu Item
-	 *
-	 * Sub menu item to Admin Menu
-	 *
-	 * @return void
+	 * Output the HTML for the reporting screens
+	 * @return   void
+	 * @since    3.2.0
+	 * @version  3.2.0
 	 */
-	public function display_analytics_menu() {
-
-		$settings = add_submenu_page( 'lifterlms', 'LifterLMS Analytics', __( 'Analytics', 'lifterlms' ), apply_filters( 'lifterlms_admin_analytics_access', 'manage_options' ), 'llms-analytics', array( $this, 'analytics_page_init' ) );
+	public function reporting_page_init() {
+		require_once 'reporting/class.llms.admin.reporting.php';
+		$gb = new LLMS_Admin_Reporting();
+		$gb->output();
 	}
 
 	/**
-	 * Init LLMS_Admin_Analytics
-	 *
-	 * @return void
-	 */
-	public function analytics_page_init() {
-		include_once( 'class.llms.admin.analytics.php' );
-		LLMS_Admin_Analytics::output();
-	}
-
-	/**
-	 * Students Menu Item
-	 *
-	 * Sub menu item to Admin Menu
-	 *
-	 * @return void
-	 */
-	public function display_students_menu() {
-
-		$settings = add_submenu_page( 'lifterlms', 'LifterLMS Students', __( 'Students', 'lifterlms' ), apply_filters( 'lifterlms_admin_students_access', 'manage_options' ), 'llms-students', array( $this, 'students_page_init' ) );
-	}
-
-	/**
-	 * Init LLMS_Admin_Students
-	 *
-	 * @return void
-	 */
-	public function students_page_init() {
-		include_once( 'class.llms.admin.students.php' );
-		LLMS_Admin_Students::output();
-	}
-
-	/**
-	 * System Report Menu Item
-	 *
-	 * Sub menu item to Admin Menu
-	 *
-	 * @return void
-	 */
-	public function display_system_report_menu() {
-
-		$settings = add_submenu_page( 'lifterlms', 'LifterLMS System report', __( 'System Report', 'lifterlms' ), apply_filters( 'lifterlms_admin_system_report_access', 'manage_options' ), 'llms-system-report', array( $this, 'system_report_page_init' ) );
-	}
-
-	/**
-	 * Init LLMS_Admin_Settings
-	 *
+	 * Output the HTLM for the System Report page
 	 * @return void
 	 */
 	public function system_report_page_init() {

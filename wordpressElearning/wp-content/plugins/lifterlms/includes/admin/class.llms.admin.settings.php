@@ -45,11 +45,9 @@ class LLMS_Admin_Settings {
 			include_once( 'settings/class.llms.settings.page.php' );
 
 			$settings[] = include( 'settings/class.llms.settings.general.php' );
-			$settings[] = include( 'settings/class.llms.settings.courses.php' );
-			$settings[] = include( 'settings/class.llms.settings.membership.php' );
+			$settings[] = include( 'settings/class.llms.settings.catalogs.php' );
 			$settings[] = include( 'settings/class.llms.settings.accounts.php' );
 			$settings[] = include( 'settings/class.llms.settings.checkout.php' );
-			$settings[] = include( 'settings/class.llms.settings.gateways.php' );
 			$settings[] = include( 'settings/class.llms.settings.engagements.php' );
 			$settings[] = include( 'settings/class.llms.settings.integrations.php' );
 
@@ -79,6 +77,8 @@ class LLMS_Admin_Settings {
 		self::set_message( __( 'Your settings have been saved.', 'lifterlms' ) );
 
 		do_action( 'lifterlms_settings_saved' );
+	   	do_action( 'lifterlms_settings_saved_' . $current_tab );
+
 	}
 
 	/**
@@ -111,13 +111,13 @@ class LLMS_Admin_Settings {
 		if ( sizeof( self::$errors ) > 0 ) {
 
 			foreach ( self::$errors as $error ) {
-				echo '<div class="error"><p><strong>' . esc_html( $error ) . '</strong></p></div>';
+				echo '<div class="error"><p><strong>' . $error . '</strong></p></div>';
 			}
 
 		} elseif ( sizeof( self::$messages ) > 0 ) {
 
 			foreach ( self::$messages as $message ) {
-				echo '<div class="updated"><p><strong>' . esc_html( $message ) . '</strong></p></div>';
+				echo '<div class="updated"><p><strong>' . $message . '</strong></p></div>';
 			}
 		}
 	}
@@ -128,6 +128,7 @@ class LLMS_Admin_Settings {
 	* @return void
 	*/
 	public static function output() {
+
 		global $current_tab;
 
 		do_action( 'lifterlms_settings_start' );
@@ -136,20 +137,21 @@ class LLMS_Admin_Settings {
 
 		$current_tab = empty( $_GET['tab'] ) ? 'general' : sanitize_title( $_GET['tab'] );
 
-	    if ( ! empty( $_POST ) ) {
-	    	self::save(); }
+		if ( ! empty( $_POST ) ) {
+			self::save(); }
 
-	    if ( ! empty( $_GET['llms_error'] ) ) {
-	    	self::set_error( stripslashes( $_GET['llms_error'] ) ); }
+		if ( ! empty( $_GET['llms_error'] ) ) {
+			self::set_error( stripslashes( $_GET['llms_error'] ) ); }
 
-	    if ( ! empty( $_GET['llms_message'] ) ) {
-	    	self::set_message( stripslashes( $_GET['llms_message'] ) ); }
+		if ( ! empty( $_GET['llms_message'] ) ) {
+			self::set_message( stripslashes( $_GET['llms_message'] ) ); }
 
-	    self::display_messages_html();
+		self::display_messages_html();
 
-	    $tabs = apply_filters( 'lifterlms_settings_tabs_array', array() );
+		$tabs = apply_filters( 'lifterlms_settings_tabs_array', array() );
 
 		include 'views/html.admin.settings.php';
+
 	}
 
 	/**
@@ -174,6 +176,13 @@ class LLMS_Admin_Settings {
 	}
 
 
+	/**
+	 * Output fields
+	 * @param  array $field array of field settings
+	 * @return void
+	 *
+	 * @version  3.0.0
+	 */
 	public static function output_field( $field ) {
 
 		// set missing values with defaults
@@ -207,12 +216,23 @@ class LLMS_Admin_Settings {
 
 				}
 
-				echo '<table class="form-table">'. "\n\n";
+				echo '<table class="form-table">' . "\n\n";
 
 				if ( ! empty( $field['id'] ) ) {
 
 					do_action( 'lifterlms_settings_' . sanitize_title( $field['id'] ) );
 
+				}
+			break;
+
+			case 'subtitle':
+				if ( ! empty( $field['title'] ) ) {
+				    echo '<tr valign="top"><td colspan="2">
+				    	<h3 class="llms-subtitle">' . $field['title'] . '</h3>';
+				    if ( ! empty( $field['desc'] ) ) {
+				    	echo '<p>' . $field['desc'] . '</p>';
+				    }
+				    echo '</tr></td>';
 				}
 			break;
 
@@ -224,6 +244,12 @@ class LLMS_Admin_Settings {
 			break;
 
 			case 'custom-html':
+				if ( ! empty( $field['value'] ) ) {
+				    echo '<tr valign="top"><td colspan="2">' . $field['value'] . '</tr></td>';
+				}
+			break;
+
+			case 'custom-html-no-wrap':
 				if ( ! empty( $field['value'] ) ) {
 				    echo $field['value'];
 				}
@@ -261,6 +287,9 @@ class LLMS_Admin_Settings {
 			break;
 
 			case 'button':
+
+				$name = isset( $field['name'] ) ? $field['name'] : 'save';
+
 				echo '<tr valign="top"><th>
             		<label for="' . esc_attr( $field['id'] ) . '">' . esc_html( $field['title'] ) . '</label>
 						' . $tooltip . '
@@ -268,7 +297,8 @@ class LLMS_Admin_Settings {
 
 				echo '<td class="forminp forminp-' . sanitize_title( $field['type'] ) . '">';
 				echo '<div id="llms-form-wrapper">';
-				echo '<input name="save" class="button-primary" type="submit" value="' . esc_attr( $field['value'] ) . '" />';
+				echo $description . '<br><br>';
+				echo '<input name="' . $name . '" class="llms-button-primary" type="submit" value="' . esc_attr( $field['value'] ) . '" />';
 				echo '</div>';
 				echo '</td></tr>';
 				//get_submit_button( 'Filter Results', 'primary', 'llms_search', true, array( 'id' => 'llms_analytics_search' ) );
@@ -317,8 +347,6 @@ class LLMS_Admin_Settings {
 						<?php echo $tooltip; ?>
 					</th>
 					<td class="forminp forminp-<?php echo sanitize_title( $field['type'] ) ?>">
-						<?php echo $description; ?>
-
 						<textarea
 							name="<?php echo esc_attr( $field['id'] ); ?>"
 							id="<?php echo esc_attr( $field['id'] ); ?>"
@@ -326,6 +354,7 @@ class LLMS_Admin_Settings {
 							class="<?php echo esc_attr( $field['class'] ); ?>"
 							<?php echo implode( ' ', $custom_attributes ); ?>
 							><?php echo esc_textarea( $option_value );  ?></textarea>
+						<?php echo $description; ?>
 					</td>
 				</tr><?php
 			break;
@@ -349,14 +378,24 @@ class LLMS_Admin_Settings {
 							>
 	                    	<?php
 							foreach ( $field['options'] as $key => $val ) {
+
+								// convert an array from llms_make_select2_post_array()
+								if ( is_array( $val ) ) {
+									$key = $val['key'];
+									$val = $val['title'];
+								}
+
 								?>
 								<option value="<?php echo esc_attr( $key ); ?>" <?php
 
 								if ( is_array( $option_value ) ) {
-									selected( in_array( $key, $option_value ), true ); } else { 										selected( $option_value, $key ); }
+									selected( in_array( $key, $option_value ), true );
+								} else {
+									selected( $option_value, $key );
+								}
 
-		                        	?>><?php echo $val ?></option>
-		                        	<?php
+								?>><?php echo $val ?></option>
+								<?php
 							}
 		                    ?>
 					   </select> <?php echo $description; ?>
@@ -485,7 +524,7 @@ class LLMS_Admin_Settings {
 				?><tr valign="top" class="single_select_page">
 					<th><?php echo esc_html( $field['title'] ) ?> <?php echo $tooltip; ?></th>
 					<td class="forminp">
-			        	<?php echo str_replace( ' id=', " data-placeholder='" . __( 'Select a page&hellip;', 'lifterlms' ) .  "' style='" . $field['css'] . "' class='" . $field['class'] . "' id=", wp_dropdown_pages( $args ) ); ?> <?php echo $description; ?>
+			        	<?php echo str_replace( ' id=', " data-placeholder='" . __( 'Select a page&hellip;', 'lifterlms' ) . "' style='" . $field['css'] . "' class='" . $field['class'] . "' id=", wp_dropdown_pages( $args ) ); ?> <?php echo $description; ?>
 			        </td>
 			   	</tr><?php
 			break;
@@ -595,7 +634,7 @@ class LLMS_Admin_Settings {
 
 		}
 
-		if ( $description && in_array( $field['type'], array( 'textarea', 'radio' ) ) ) {
+		if ( $description && in_array( $field['type'], array( 'radio' ) ) ) {
 
 			$description = '<p style="margin-top:0">' . wp_kses_post( $description ) . '</p>';
 
@@ -808,9 +847,6 @@ class LLMS_Admin_Settings {
 	    	update_option( $name, $value );
 
 	    }
-
-	    //flush the rewrite rules (REFACTOR: be more specific about when this is done)
-	    flush_rewrite_rules();
 
 	    return true;
 	}

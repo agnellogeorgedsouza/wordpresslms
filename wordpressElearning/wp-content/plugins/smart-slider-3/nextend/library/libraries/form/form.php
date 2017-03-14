@@ -1,8 +1,7 @@
 <?php
 N2Loader::import('libraries.xml.helper');
 
-class N2FormAbstract extends N2Data
-{
+class N2FormAbstract extends N2Data {
 
     public static $documentation = '';
 
@@ -81,6 +80,11 @@ class N2FormAbstract extends N2Data
             echo "xml file not found ('{$file}')! <br /><strong>" . __FILE__ . ":" . __LINE__ . "</strong>";
             n2_exit(true);
             //throw new Exception("xml file not found ('{$file}')! <br /><strong>" . __FILE__ . ":" . __LINE__."</strong>");
+        }
+
+        if (!function_exists('simplexml_load_string')) {
+            n2_e("SimpleXML extension must be enabled in PHP!");
+            n2_exit(true);
         }
 
         // @fix Warning: simplexml_load_file(): I/O warning : failed to load external entity

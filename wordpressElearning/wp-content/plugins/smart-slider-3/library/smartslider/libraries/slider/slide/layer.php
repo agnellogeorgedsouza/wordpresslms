@@ -1,17 +1,18 @@
 <?php
+N2Loader::import('libraries.slider.slide.slidecontentabstract', 'smartslider');
 
-class  N2SmartSliderLayer {
+class N2SmartSliderLayer extends N2SmartSliderSlideContentAbstract {
 
-    private $slider, $slide, $item;
+    private $item;
 
     /**
-     * @param $slider N2SmartSliderAbstract
-     * @param $slide  N2SmartSliderSlide
+     * @param $slider    N2SmartSliderAbstract
+     * @param $slide     N2SmartSliderSlide
+     * @param $renderers array
      */
-    public function __construct($slider, $slide) {
-        $this->slider = $slider;
-        $this->slide  = $slide;
-        $this->item   = new N2SmartSliderItem($slider, $slide);
+    public function __construct($slider, $slide, &$renderers) {
+        parent::__construct($slider, $slide, $renderers);
+        $this->item = new N2SmartSliderItem($slider, $slide);
     }
 
     private function WHUnit($value) {
@@ -22,6 +23,13 @@ class  N2SmartSliderLayer {
     }
 
     public function render($layer) {
+
+        if (!empty($layer['generatorvisible']) && $this->slide->hasGenerator() && !$this->slider->isAdmin) {
+            $filled = $this->slide->fill($layer['generatorvisible']);
+            if (empty($filled)) {
+                return '';
+            }
+        }
 
         $innerHTML = '';
         for ($i = 0; $i < count($layer['items']); $i++) {
@@ -40,9 +48,19 @@ class  N2SmartSliderLayer {
                 $layer['class'] .= ' n2-scrollable';
             }
         }
+        if (!isset($layer['rotation'])) $layer['rotation'] = 0;
+
+        if ($layer['rotation'] != 0) {
+            $innerHTML = N2Html::tag('div', array(
+                'class' => 'n2-ss-layer-rotation',
+                'style' => '-ms-transform: rotateZ(' . $layer['rotation'] . 'deg);-webkit-transform: rotateZ(' . $layer['rotation'] . 'deg);transform: rotateZ(' . $layer['rotation'] . 'deg);'
+            ), $innerHTML);
+        }
 
         if ($layer['crop'] == 'mask') {
-            $cropStyle = 'hidden';
+            if ($layer['crop'] == 'mask') {
+                $cropStyle = 'hidden';
+            }
             $innerHTML = N2Html::tag('div', array('class' => 'n2-ss-layer-mask'), $innerHTML);
         } else if (!$this->slider->isAdmin && $layer['parallax'] > 0) {
             $innerHTML = N2Html::tag('div', array(
@@ -82,10 +100,13 @@ class  N2SmartSliderLayer {
         }
 
         $attributes = array(
-            'class'           => 'n2-ss-layer' . (empty($layer['class']) ? '' : ' ' . $layer['class']),
-            'style'           => 'z-index:' . $zIndex . ';overflow:' . $cropStyle . ';' . $style . ';',
-            'data-animations' => base64_encode(json_encode($layer['animations']))
+            'class' => 'n2-ss-layer' . (empty($layer['class']) ? '' : ' ' . $layer['class']),
+            'style' => 'z-index:' . $zIndex . ';overflow:' . $cropStyle . ';' . $style . ';'
         );
+
+        if (!empty($layer['animations'])) {
+            $attributes['data-animations'] = base64_encode(json_encode($layer['animations']));
+        }
 
         if (!empty($layer['id'])) {
             $attributes['id'] = $layer['id'];
@@ -108,6 +129,8 @@ class  N2SmartSliderLayer {
             unset($layer['inneralign']);
             unset($layer['crop']);
             unset($layer['zIndex']);
+        } else {
+            $layer['type'] = 'layer';
         }
 
         foreach ($layer AS $k => $data) {
@@ -150,6 +173,16 @@ class  N2SmartSliderLayer {
         for ($i = 0; $i < count($layers); $i++) {
             for ($j = 0; $j < count($layers[$i]['items']); $j++) {
                 $layers[$i]['items'][$j] = N2SmartSliderItem::prepareImport($import, $layers[$i]['items'][$j]);
+            }
+        }
+        return json_encode($layers);
+    }
+
+    public static function prepareFixed($rawLayers) {
+        $layers = json_decode($rawLayers, true);
+        for ($i = 0; $i < count($layers); $i++) {
+            for ($j = 0; $j < count($layers[$i]['items']); $j++) {
+                $layers[$i]['items'][$j] = N2SmartSliderItem::prepareFixed($layers[$i]['items'][$j]);
             }
         }
         return json_encode($layers);

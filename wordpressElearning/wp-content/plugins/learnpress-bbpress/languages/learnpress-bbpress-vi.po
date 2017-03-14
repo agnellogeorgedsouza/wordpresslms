@@ -1,0 +1,48 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: LearnPress bbPress Course Forum\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-03-18 14:38+0700\n"
+"PO-Revision-Date: Fri Mar 18 2016 14:40:31 GMT+0700 (SE Asia Standard Time)\n"
+"Last-Translator: Nguyễn Ngọc Tú <tunnhn@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: Vietnamese\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: ..\n"
+"X-Poedit-KeywordsList: _:1;gettext:1;dgettext:2;ngettext:1,2;dngettext:2,3;"
+"__:1;_e:1;_c:1;_n:1,2;_n_noop:1,2;_nc:1,2;__ngettext:1,2;__ngettext_noop:1,2;"
+"_x:1,2c;_ex:1,2c;_nx:1,2,4c;_nx_noop:1,2,3c;_n_js:1,2;_nx_js:1,2,3c;"
+"esc_attr__:1;esc_html__:1;esc_attr_e:1;esc_html_e:1;esc_attr_x:1,2c;"
+"esc_html_x:1,2c;comments_number_link:2,3;t:1;st:1;trans:1;transChoice:1,2\n"
+"X-Loco-Target-Locale: vi_VN\n"
+"X-Generator: Loco - https://localise.biz/"
+
+#: learnpress-bbpress.php:81
+msgid "You have to enroll the respective course!"
+msgstr ""
+
+#: learnpress-bbpress.php:83
+#, php-format
+msgid "Go back to %s"
+msgstr ""
+
+#: learnpress-bbpress.php:138
+msgid "Enable bbPress forum for this course."
+msgstr "Kich hoat forum cho khoa hoc nay"
+
+#: learnpress-bbpress.php:155
+msgid "--- Select existing forum or create a new one ---"
+msgstr ""
+
+#: learnpress-bbpress.php:159
+msgid "Enter new forum name"
+msgstr ""
+
+#: learnpress-bbpress.php:164
+msgid "Only user enrolled course can access this forum."
+msgstr ""

@@ -26,16 +26,19 @@ class N2JS {
         N2AssetsManager::$js->addFirstCode($code, $unshift);
     }
 
-    public static function addInline($code, $global = false) {
-        N2AssetsManager::$js->addInline($code, $global);
+    public static function addInline($code, $global = false, $unshift = false) {
+        N2AssetsManager::$js->addInline($code, $global, $unshift);
     }
 
     public static function jQuery($force = false) {
+        // WordPress only
         if ($force) {
-            self::addFiles(ABSPATH . '/wp-includes/js/jquery/', array(
-                "jquery.js",
-                "jquery-migrate.min.js"
-            ), "n2");
+            if (N2Settings::get('jquery')) {
+                self::addFiles(ABSPATH . '/wp-includes/js/jquery/', array(
+                    "jquery.js",
+                    "jquery-migrate.min.js"
+                ), "n2");
+            }
             self::addFiles(N2LIBRARYASSETS . '/js/core/jquery', array(
                 "njQuery.js"
             ), "n2");

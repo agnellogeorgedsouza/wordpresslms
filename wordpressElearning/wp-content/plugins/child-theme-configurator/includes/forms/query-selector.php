@@ -5,7 +5,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 ?>
 
 <div id="query_selector_options_panel" 
-        class="ctc-option-panel<?php echo 'query_selector_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>" <?php echo $hidechild; ?>>
+        class="ctc-option-panel <?php $this->maybe_disable(); echo 'query_selector_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>">
 <p class="howto"><?php _e( 'To find and edit specific selectors within @media query blocks, first choose the query, then the selector. Use the "base" query to edit all other selectors.', 'child-theme-configurator' ); ?></p>
   <form id="ctc_query_selector_form" method="post" action="?page=<?php echo $ctcpage; ?>">
     <?php wp_nonce_field( apply_filters( 'chld_thm_cfg_action', 'ctc_update' ) ); ?>

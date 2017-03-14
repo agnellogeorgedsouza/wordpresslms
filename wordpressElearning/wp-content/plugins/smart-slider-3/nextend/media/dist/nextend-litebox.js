@@ -78,12 +78,14 @@
 
             // Element click
             this.$element.on('click n2click', function (e) {
-                if (timeout === false) {
-                    e.preventDefault();
-                    $this.openLitebox();
-                    timeout = setTimeout(function () {
-                        timeout = false;
-                    }, 300);
+                if (!nextend.shouldPreventClick) {
+                    if (timeout === false) {
+                        e.preventDefault();
+                        $this.openLitebox();
+                        timeout = setTimeout(function () {
+                            timeout = false;
+                        }, 300);
+                    }
                 }
             });
 

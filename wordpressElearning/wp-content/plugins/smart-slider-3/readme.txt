@@ -1,10 +1,10 @@
 === Smart Slider 3 ===
 Contributors: nextendweb
-Tags: slider,wordpress slider,carousel,gallery slider,horizontal slider,image slider,layer slider,responsive slider,slide,slider,slideshow,vertical slider,wordpress slideshow,youtube slider,HTML5 slider,Photo Slider,animation,banner rotator,best slider,content slider,fullwidth slider,gallery,hardware accelerate,mobile slider,post slider,swipe,touch slider,page slider,slider plugin,slider shortcode
+Tags: slider, gallery slider, image slider, layer slider, responsive slider, slideshow, fullwidth slider, post slider, horizontal slider, vertical slider, photo slider, video slider
 Donate link: https://www.facebook.com/nextendweb
 Requires at least: 4.0
-Tested up to: 4.6
-Stable tag: 3.0.37
+Tested up to: 4.7.2
+Stable tag: 3.1.6
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,9 +12,11 @@ Responsive slider plugin to create beautiful sliders in the next generation visu
 
 == Description ==
 
+> [See what's new in Smart Slider 3.1](http://nextendweb.com/smart-slider-3-1-supernova/)
+
 Smart Slider 3 is a brand new and intuitive WordPress plugin to create sliders which was never possible before with any free slider plugins. Smart Slider 3 has every feature what you can expect from a free slider plugin. Besides that Smart Slider gives you the tool to create YouTube and Vimeo slides, create slides from your WordPress posts, even more it has a complete easy-to-use slide editor with different layers. Don't hesitate install the Smart Slider 3 and enjoy the next generation plugin experience!
 
->[Demo sliders](http://smartslider3.com/tag/free)  |  [Introduction video](https://www.youtube.com/watch?v=MKmIwHAFjSU)  |  [Documentation](http://doc.smartslider3.com/)  |  [Support](http://smartslider3.com/contact-us)
+>[Sample sliders](http://smartslider3.com/tag/free)  |  [Introduction video](https://www.youtube.com/watch?v=MKmIwHAFjSU)  |  [Documentation](http://doc.smartslider3.com/)  |  [Support](http://smartslider3.com/contact-us)
 
 [youtube https://www.youtube.com/watch?v=fjmENHah_oY]
 
@@ -28,6 +30,20 @@ Smart Slider 3 is a brand new and intuitive WordPress plugin to create sliders w
 * **Layers** - Build unique design with 6 varied layers: Image, Heading, Text, Button, Vimeo, YouTube
 * **Font and Style manager system** - Change easily all the details that really matter in typography and style.
 * **Sample sliders** - [4 sliders](http://smartslider3.com/tag/free) to start
+
+#### Testimonials
+
+> *"If you need to create sliders or want a single image with subtle animations on your website Smart Slider 3 provides the solution, no matter what you want to accomplish. I can heartily recommend the free version. It already provides more functionality than any other slider plugin – even many premium ones." - Daniel Pataki - [premium.wpmudev.org](https://premium.wpmudev.org/blog/smart-slider-3/)*
+
+> *"Having tried more than a few WordPress slider plugins, both free and paid, I can honestly say that this is one of the best that I’ve ever tested... If you’re looking for a slider plugin for your WordPress website that will get you up and running quickly, but also has features that you can grow into, look no further." - Daryn Collier - [wpkube.com](http://www.wpkube.com/how-to-create-beautiful-slides-for-your-wordpress-website-with-smart-slider-3/)*
+
+> *"Since Smart Slider is free to use, I do not have to really stress how good a plugin it is because you can download it yourself and see for yourself. I highly recommend you all do this." - Kevin Muldoon - [kevinmuldoon.com](http://www.kevinmuldoon.com/smart-slider-review/)*
+
+> *"This is a beautifully designed slider plugin with a very high level of polish to it, the admin area of it is great and very easy to use. This plugin can be used for much more than a simple slider – being able to create whole sections of your website." - Oliver Dale - [wplift.com](http://wplift.com/smart-slider-animated-slider-plugin)*
+
+> *"Taking all this into consideration we can safely say that Smart Slider 3 is one of the top WordPress slider plugins around and should definitely be taken into consideration when choosing the next slider plugin to implement on your WordPress site." - Mark Zahra - [wpmayor.com](http://www.wpmayor.com/smart-slider-3/)*
+
+> *"I was actually blown away by the features and quality of the Smart Slider. They took an interesting approach with their sales model by letting you try the slider for free and then offering license options with more options and pre-built sliders for once you’re hooked on the product." - WD&S - [webdesignandsuch.com](http://webdesignandsuch.com/smart-slider-free-alternative-to-wordpress-revolution-layer-sliders/)*
 
 #### Features:
 * Slider creation with 3 presets: Default, Thumbnail - horizontal and Caption
@@ -87,20 +103,6 @@ Smart Slider 3 is a community-driven project that would not be the same without 
 
 Upgrade to [Pro Version](http://smartslider3.com/pricing/)
 
-#### Testimonials
-
-> *"If you need to create sliders or want a single image with subtle animations on your website Smart Slider 3 provides the solution, no matter what you want to accomplish. I can heartily recommend the free version. It already provides more functionality than any other slider plugin – even many premium ones." - Daniel Pataki - [premium.wpmudev.org](https://premium.wpmudev.org/blog/smart-slider-3/)*
-
-> *"Having tried more than a few WordPress slider plugins, both free and paid, I can honestly say that this is one of the best that I’ve ever tested... If you’re looking for a slider plugin for your WordPress website that will get you up and running quickly, but also has features that you can grow into, look no further." - Daryn Collier - [wpkube.com](http://www.wpkube.com/how-to-create-beautiful-slides-for-your-wordpress-website-with-smart-slider-3/)*
-
-> *"Since Smart Slider is free to use, I do not have to really stress how good a plugin it is because you can download it yourself and see for yourself. I highly recommend you all do this." - Kevin Muldoon - [kevinmuldoon.com](http://www.kevinmuldoon.com/smart-slider-review/)*
-
-> *"This is a beautifully designed slider plugin with a very high level of polish to it, the admin area of it is great and very easy to use. This plugin can be used for much more than a simple slider – being able to create whole sections of your website." - Oliver Dale - [wplift.com](http://wplift.com/smart-slider-animated-slider-plugin)*
-
-> *"Taking all this into consideration we can safely say that Smart Slider 3 is one of the top WordPress slider plugins around and should definitely be taken into consideration when choosing the next slider plugin to implement on your WordPress site." - Mark Zahra - [wpmayor.com](http://www.wpmayor.com/smart-slider-3/)*
-
-> *"I was actually blown away by the features and quality of the Smart Slider. They took an interesting approach with their sales model by letting you try the slider for free and then offering license options with more options and pre-built sliders for once you’re hooked on the product." - WD&S - [webdesignandsuch.com](http://webdesignandsuch.com/smart-slider-free-alternative-to-wordpress-revolution-layer-sliders/)*
-
 
 #### Use-cases for Dynamic slide sources in FREE version
 * **WordPress Posts slider**: WordPress posts in your slider by Category and Tag filter or only the specified posts.
@@ -132,14 +134,6 @@ Upgrade to [Pro Version](http://smartslider3.com/pricing/)
 * German (de_DE) 90%
 * Hungarian (hu_HU) 85%
 * Spanish (es_ES) 99%
-
-
-#### Sample Sliders in Free version
-* **[Full-width Slider](http://smartslider3.com/free-full-width/):** This sample slider presents you a simple image slider with heading and read more button on it. It could be great for presenting your latest blog posts. Presented features: [full-width responsive mode](http://smartslider3.com/tag/full-width/), [mobile touch](http://smartslider3.com/tag/mobile-touch/), [keyboard navigation](http://smartslider3.com/tag/keyboard-navigation/), arrow control, bullet control, heading layer, button layer, image layer and horizontal slider animation.
-* **[Layer Slider](http://smartslider3.com/free-layers/):** This sample slider shows you an example, how can you build different layouts with layers, styles and fonts. You can use it as a template where every slide represent a different use-case: portfolio slide, blog post slide, YouTube slide and heading slide. Presented features: [boxed slider](http://smartslider3.com/tag/boxed/), [mobile touch](http://smartslider3.com/tag/mobile-touch/), [keyboard navigation](http://smartslider3.com/tag/keyboard-navigation/), arrow control, bullet control, heading layer, button layer, image layer, YouTube layer, video, custom typography and crossfade slider animation.
-* **[Slider with Static Slide](http://smartslider3.com/free-static/):** This aproach is perfect if you have high quality images and you would like to create an exceptional image slider with static slide overlay. It allows you to display the same slide template over the images. Presented features: [boxed slider](http://smartslider3.com/tag/boxed/), [mobile touch](http://smartslider3.com/tag/mobile-touch/), [keyboard navigation](http://smartslider3.com/tag/keyboard-navigation/), static slide, heading layer, button layer, arrow control, bullet control and horizontal slider animation.
-* **[Thumbnail Slideshow](http://smartslider3.com/free-thumbnail/):** You can use thumbnails and background images to present your photos in a slider. Your visitors can easily pick the right slide on the thumbnail bar for quick navigation. This is how every image slideshow should work. Presented features: [boxed slider](http://smartslider3.com/tag/boxed/), [horizontal mobile touch](http://smartslider3.com/tag/mobile-touch/),[image thumbnail control](http://smartslider3.com/tag/thumbnail/), responsive scale down and several background animations.
-
 
 == Installation ==
 [Check our official documentation for more information](http://doc.smartslider3.com)
@@ -208,12 +202,72 @@ Of course! Smart Slider use protocol relative urls which works fine on http:// a
 
 == Changelog ==
 
-= 3.0.37 - 05. October 2016. =     
+= 3.1.6 - 30. January 2017. =
+Feature: if /tmp folder is not writable, we will use the cache folder for slider imports
+Fix: Backend top menu fix for Chrome
+Fix: Loading spinner position
+Fix: Slide editor's layer reseting for groups
+Fix: Advanced generator setting - remove links fix
+
+= 3.1.5 - 27. January 2017. =
+* Fix: Menu fix for Parallax One and Llorix One Lite theme
+* Fix: Bento theme problem fix - same class renamed
+* Fix: Slider duplication fix
+* Fix: Generator splitbywords fix
+
+= 3.1.4 - 18. January 2017. =
+* Feature: Text bar title on/off
+* Feature: Generator settings in more visible locations
+* Feature: Image layer reads alt tags from WordPress Media Library when a new image is selected
+* Feature: rel attribute on links
+* Feature: Vimeo layer quality parameter
+* Feature: New PHP function for developers to make importing easier
+* Feature: Different CSS file incalling options from the Nextend settings
+* Feature: Better error handling for different server caused issues
+* Fix: Tidy settings removed (got deprecated)
+* Fix: Backend editor responsiveness fix in Chrome
+* Fix: WordPress post generator variable name bug
+* Fix: Google font list updated
+* Fix: SiteOrigin Widgets fix for the post generators
+
+= 3.1.2 - 22. November 2016. =
+* UI Revamp and Refresh: dashboard, slider and slide view
+* Completely new slide editor interface
+* New Slides view with bulk actions
+* New layer window
+* Feature: Design presets for layers
+* Feature: Multiple layer selection and groups
+* Feature: Layer rotation
+* Gradient background and overlay
+* Feature: Tooltip for parameters
+* Feature: Ruler and guides for the canvas
+* Improved: default and autocomplete values
+* Feature: Image area layer 
+* Feature: WordPress posts generator tag variables
+* Feature: New autoplay code for developer customization
+* Feature: Yoast SEO sitemap will include Smart Slider images
+* Feature: Vimeo API updated
+* Feature: Multiple layer animation selecting with Ctrl (CMD) button on the timeline
+* Feature: Slider ID displayed at slider and slide settings
+* Feature: Slider settings will only appear, when you have slides
+* Feature: Heading layer - div tag option
+* Feature: Backend slide list handling improvement
+* Feature: Image layer - hotkey (A) to have the image with it's original size
+* Feature: Image layer improved handling in generators
+* Feature: Simple slider type - reversed horizontal and vertical options for the main animation
+* Fix: Passing PHP Compatibility Checker plugin's test
+* Fix: Export all sliders unzipping on MACs
+* Fix: Decimal point on some server configurations    
+* Fix: Admin area autoload fixes for Nextend settings
+* Fix: Youtube layer - centered option overflow fix
+* Fix: Beta version bugfixes to make stable 3.1 release
+* 
+= 3.0.37 - 05. October 2016. =
 * Fix: Beaver Builder will only show our shortcode, because it's not able to call in files
 * Fix: iOS10 touch improvement
 * Fix: Notice at other plugins' installation
 
-= 3.0.36 - 27. September 2016. =     
+= 3.0.36 - 27. September 2016. =
 * Feature: Attribute change from n2click to data-n2click
 * Feature: Slide publish interval localization
 * Feature: WordPress post generator variables for different image size from ACF

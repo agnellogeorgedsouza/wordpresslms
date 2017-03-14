@@ -100,26 +100,29 @@ class N2Html {
      */
     public static function renderAttributes($htmlOptions = array()) {
         static $specialAttributes = array(
-            'async'         => 1,
-            'autofocus'     => 1,
-            'autoplay'      => 1,
-            'controls'      => 1,
-            'declare'       => 1,
-            'default'       => 1,
-            'defer'         => 1,
-            'disabled'      => 1,
-            'ismap'         => 1,
-            'loop'          => 1,
-            'muted'         => 1,
-            'nohref'        => 1,
-            'noresize'      => 1,
-            'novalidate'    => 1,
-            'open'          => 1,
-            'reversed'      => 1,
-            'scoped'        => 1,
-            'seamless'      => 1,
-            'selected'      => 1,
-            'typemustmatch' => 1,
+            'async'              => 1,
+            'autofocus'          => 1,
+            'autoplay'           => 1,
+            'controls'           => 1,
+            'declare'            => 1,
+            'default'            => 1,
+            'defer'              => 1,
+            'disabled'           => 1,
+            'ismap'              => 1,
+            'loop'               => 1,
+            'muted'              => 1,
+            'playsinline'        => 1,
+            'webkit-playsinline' => 1,
+            'nohref'             => 1,
+            'noresize'           => 1,
+            'novalidate'         => 1,
+            'open'               => 1,
+            'reversed'           => 1,
+            'scoped'             => 1,
+            'seamless'           => 1,
+            'selected'           => 1,
+            'typemustmatch'      => 1,
+            'lazyload'           => 1,
         );
 
         if ($htmlOptions === array()) return '';
@@ -156,7 +159,7 @@ class N2Html {
         if (!is_string($url)) {
             throw new Exception();
         }
-        $htmlOptions["href"]   = $url;
+        $htmlOptions["href"] = $url;
         //$htmlOptions["encode"] = false;
 
         $url = self::openTag("a", $htmlOptions);
@@ -191,9 +194,9 @@ class N2Html {
             return N2Html::tag('link', $options, false);
         }
 
-        return N2Html::tag("style", array(
-            "type" => "text/css"
-        ), $script);
+        return N2Html::tag("style", $scriptOptions + array(
+                "type" => "text/css"
+            ), $script);
     }
 
     /**
@@ -231,7 +234,7 @@ class N2Html {
     }
 
     public static function clear() {
-        return self::tag("div", array("class" => "clear"), "");
+        return self::tag("div", array("class" => "n2-clear"), "");
     }
 
     private static function getScriptAttributes() {
@@ -244,7 +247,7 @@ class N2Html {
                     foreach ($_attributes AS $attr) {
                         if (strpos($attr, '=') !== false) {
                             $atts = explode("=", $attr);
-                            if(count($atts) <= 2){
+                            if (count($atts) <= 2) {
                                 $attributes[$atts[0]] = $atts[1];
                             } else {
                                 $attributes[$attr] = $attr;

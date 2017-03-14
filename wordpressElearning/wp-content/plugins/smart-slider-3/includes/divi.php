@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 
 function Nextend_ET_Builder_Module_Smart_Slider_Field() {
     $output = sprintf('<input type="button" class="button button-upload" value="%1$s" onclick="return NextendSmartSliderDiviModal(this);" />', 'Select Slider');

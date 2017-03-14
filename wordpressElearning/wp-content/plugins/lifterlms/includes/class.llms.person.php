@@ -37,7 +37,6 @@ class LLMS_Person {
 		// When leaving or ending page load, store data
 		add_action( 'shutdown', array( $this, 'save_data' ), 10 );
 		add_action( 'wp_login', array( $this, 'set_user_login_timestamp' ), 10, 2 );
-		add_action( 'user_register', array( $this, 'set_user_login_timestamp_on_register' ), 10, 2 );
 	}
 
 	/**
@@ -63,16 +62,6 @@ class LLMS_Person {
 		update_user_meta( $user->ID, 'llms_last_login', $now );
 	}
 
-	/**
-	 * Set user login timestamp on registration
-	 * Update login timestamp on user registration
-	 *
-	 * @param int $user_id
-	 */
-	public function set_user_login_timestamp_on_register( $user_id ) {
-		$now = current_time( 'timestamp' );
-		update_user_meta( $user_id, 'llms_last_login', $now );
-	}
 
 
 	/**
@@ -165,7 +154,7 @@ class LLMS_Person {
 		$table_name = $wpdb->prefix . 'lifterlms_user_postmeta';
 
 		$results = $wpdb->get_results( $wpdb->prepare(
-		'SELECT * FROM '.$table_name.' WHERE user_id = %s and post_id = %d', $user_id, $post_id) );
+		'SELECT * FROM ' . $table_name . ' WHERE user_id = %s and post_id = %d', $user_id, $post_id) );
 
 		if ( empty( $results ) ) {
 			return;
@@ -194,7 +183,7 @@ class LLMS_Person {
 		$table_name = $wpdb->prefix . 'lifterlms_user_postmeta';
 
 		$results = $wpdb->get_results( $wpdb->prepare(
-		'SELECT * FROM '.$table_name.' WHERE user_id = %s and meta_key = "%s" ORDER BY updated_date DESC', $user_id, $meta_key ) );
+		'SELECT * FROM ' . $table_name . ' WHERE user_id = %s and meta_key = "%s" ORDER BY updated_date DESC', $user_id, $meta_key ) );
 
 		if ( empty( $results ) ) {
 			return;
@@ -207,5 +196,6 @@ class LLMS_Person {
 
 		return $results;
 	}
+
 
 }

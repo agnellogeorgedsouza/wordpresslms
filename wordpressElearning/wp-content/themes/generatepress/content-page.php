@@ -12,7 +12,7 @@
 		
 		<?php if ( generate_show_title() ) : ?>
 			<header class="entry-header">
-				<?php the_title( '<h1 class="entry-title" itemprop="headline">', '</h1>' ); ?>
+				<?php //the_title( '<h1 class="entry-title" itemprop="headline">', '</h1>' ); ?>
 			</header><!-- .entry-header -->
 		<?php endif; ?>
 		

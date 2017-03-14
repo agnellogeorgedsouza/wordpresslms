@@ -5,7 +5,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 ?>
 
 <div id="rule_value_options_panel" 
-        class="ctc-option-panel<?php echo 'rule_value_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>" <?php echo $hidechild; ?>>
+        class="ctc-option-panel<?php $this->maybe_disable(); echo 'rule_value_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>">
 <p class="howto"><?php _e( 'To find and edit selectors containing specific values for a given property, first choose the property (e.g., "color"), then click "Selectors" for any resulting value. A dialog panel will open with the corresponding selectors, grouped by media query.', 'child-theme-configurator' ); ?></p>
   <form id="ctc_rule_value_form" method="post" action="?page=<?php echo $ctcpage; ?>">
     <?php wp_nonce_field( apply_filters( 'chld_thm_cfg_action', 'ctc_update' ) ); ?>

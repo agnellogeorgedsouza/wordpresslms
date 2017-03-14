@@ -1,7 +1,6 @@
 <?php
 
-abstract class N2ApplicationType
-{
+abstract class N2ApplicationType {
 
     public $identifier;
 
@@ -153,6 +152,9 @@ abstract class N2ApplicationType
         return $this->actionName;
     }
 
+    /**
+     * @return N2Layout
+     */
     public function getLayout() {
         return $this->controller->layout;
     }
@@ -173,6 +175,8 @@ abstract class N2ApplicationType
             "action"     => $method
         ));
 
+        $this->onControllerReady();
+
         return array(
             $this->controller,
             $method
@@ -182,6 +186,9 @@ abstract class N2ApplicationType
     public function render($parameters, $arguments = array()) {
 
         $this->run($parameters, $arguments);
+    }
+
+    protected function onControllerReady() {
     }
 
 } 

@@ -37,7 +37,8 @@ class WDSViewSliders_wds {
       'unpublish_all' => __('Unpublish', 'wds'),
       'delete_all' => __('Delete', 'wds'),
       'duplicate_all' => __('Duplicate', 'wds'),
-      'export' => __('Export', 'wds')
+      'export' => __('Export', 'wds'),
+      'merge_sliders' => __('Merge', 'wds')
     );
     ?>
     <style>

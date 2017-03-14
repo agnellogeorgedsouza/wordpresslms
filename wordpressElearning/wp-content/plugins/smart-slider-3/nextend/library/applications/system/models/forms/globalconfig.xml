@@ -11,6 +11,14 @@
     <param type="onoff" name="minify-js" label="Minify" default="0"/>
     <param type="text" name="scriptattributes" label="Script attributes" default=""/>
   </params>
+  <params name="css" label="CSS">
+    <param type="radio" name="css-mode" label="CSS mode" default="normal">
+      <option value="normal">Normal</option>
+      <option value="combine">Combine</option>
+      <option value="inline">Inline</option>
+      <option value="async">Async</option>
+    </param>
+  </params>
   <params name="requests" label="API requests">
     <param type="onoff" name="curl" label="Curl" default="1"/>
     <param type="onoff" name="curl-clean-proxy" label="Clean Curl proxy" default="0"/>

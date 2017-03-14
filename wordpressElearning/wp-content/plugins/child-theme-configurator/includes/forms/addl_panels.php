@@ -2,7 +2,7 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 if ( !defined( 'CHLD_THM_CFG_PRO_VERSION' ) ):
-?><div id="get_pro_panel" class="ctc-option-panel<?php echo 'get_pro' == $active_tab ? ' ctc-option-panel-active' : ''; ?>" <?php echo $hidechild; ?> >
+?><div id="get_pro_panel" class="ctc-option-panel<?php echo 'get_pro' == $active_tab ? ' ctc-option-panel-active' : ''; ?>" >
 <div class="ctc-input-row clearfix">
 <div class="ctc-input-cell"><div style="padding:0 40px">
 <h1>Upgrade Offer</h1>

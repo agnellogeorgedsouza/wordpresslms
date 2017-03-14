@@ -10,6 +10,12 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
         $tmpPost         = $post;
         $tmpWp_the_query = $wp_the_query;
         $wp_the_query = null;
+        if (has_filter( 'the_content', 'siteorigin_panels_filter_content' )){
+        	$siteorigin_panels_filter_content = true;
+        	remove_filter( 'the_content', 'siteorigin_panels_filter_content' );
+        } else {
+        	$siteorigin_panels_filter_content = false;
+        }
 
         $i    = 0;
         $data = array();
@@ -17,6 +23,7 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
         foreach ($this->getIDs() AS $id) {
             $record = array();
             $post   = get_post($id);
+            if(!$post) continue;
             setup_postdata($post);
 
             $record['id'] = $post->ID;
@@ -40,7 +47,8 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
                 $record['category_link'] = '';
             }
 
-            $record['featured_image'] = wp_get_attachment_url(get_post_thumbnail_id($post->ID));
+            $thumbnail_id             = get_post_thumbnail_id($post->ID);
+            $record['featured_image'] = wp_get_attachment_url($thumbnail_id);
             if (!$record['featured_image']) {
                 $record['featured_image'] = '';
             } else {
@@ -64,8 +72,6 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
                         while (isset($record[$k])) {
                             $k  = 'acf_' . $k;
                         };
-
-
                         if (!is_array($v) && !is_object($v)) {
                             if($type['type'] == "image" && is_numeric($type["value"])){
                                 $thumbnail_meta = wp_get_attachment_metadata($type["value"]);
@@ -73,8 +79,16 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
                                 $v = $src[0];
                             }
                             $record[$k] = $v;
-                        } else if (!is_object($v) && isset($v['url'])) {
-                            $record[$k] = $v['url'];
+                        } else if (!is_object($v)) {
+                            if(isset($v['url'])){
+                                $record[$k] = $v['url'];
+                            } else if(is_array($v)){
+                                foreach($v AS $v_v => $k_k){
+                                    if(isset($k_k['url'])){
+                                        $record[$k . $v_v] = $k_k['url'];
+                                    }
+                                }
+                            }
                         }
                         if($type['type'] == "image" && (is_numeric($type["value"]) || is_array($type['value']))){
                             if(is_array($type['value'])){
@@ -92,6 +106,9 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
             $data[$i] = &$record;
             unset($record);
             $i++;
+        }
+        if ($siteorigin_panels_filter_content){
+        	add_filter( 'the_content', 'siteorigin_panels_filter_content' );
         }
 
         $wp_the_query = $tmpWp_the_query;
@@ -112,9 +129,13 @@ class N2GeneratorPostsPostsByIDs extends N2GeneratorAbstract
         }
         foreach ($sizes AS $size => $image) {
             $imageSrc               = wp_get_attachment_image_src($thumbnail_id, $size);
-            $data[$prefix.'image_' . $size] = $imageSrc[0];
+            $data[$prefix.'image_' . $this->clearSizeName($size)] = $imageSrc[0];
         }
         return $data;
+    }
+
+    protected function clearSizeName ($size){
+        return preg_replace("/-/", "_", $size);
     }
 
     protected function getACFType($key, $post_id) {

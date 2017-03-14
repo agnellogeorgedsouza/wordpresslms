@@ -45,11 +45,7 @@ class N2SmartsliderApplicationInfo extends N2ApplicationInfo {
         $path = $this->getAssetsPath();
         N2CSS::addInline('.n2-expert {display: none !important;');
     
-        N2CSS::addStaticGroup($path . '/admin/css/smartslider.min.css', 'smartslider-backend');
-
-        if (intval(N2SmartSliderSettings::get('improved-small-screen', 1))) {
-            N2CSS::addStaticGroup($path . '/admin/css/smallscreen.min.css', 'smartslider-smallscreen-backend');
-        }
+        N2CSS::addStaticGroup($path . '/admin/dist/smartslider-backend.min.css', 'smartslider-backend');
     
 
         N2Localization::addJS(array(
@@ -73,15 +69,6 @@ class N2SmartsliderApplicationInfo extends N2ApplicationInfo {
             'Index'
         ));
         N2JS::addStaticGroup($path . '/dist/smartslider-backend.min.js', 'smartslider-backend');
-        if (!N2Base::getApplication('smartslider')->storage->get('free', 'rated')) {
-            N2JS::addInline('window.N2SSWHYPRO="' . N2SS3::getWhyProUrl(array(
-                    'utm_source'   => 'why-pro',
-                    'utm_medium'   => 'smartslider-' . N2Platform::getPlatform() . '-free',
-                    'utm_campaign' => N2SS3::$campaign
-                )) . '";', true);
-            N2JS::addStaticGroup($path . '/dist/smartslider-free.min.js', 'smartslider-free');
-        }
-    
         if (!N2Base::getApplication('smartslider')->storage->get('free', 'subscribeOnImport')) {
             N2JS::addInline('
         nextend.joinCommunity = function(cb){
@@ -103,7 +90,7 @@ class N2SmartsliderApplicationInfo extends N2ApplicationInfo {
                             form.append(\'<img src="' . N2ImageHelper::fixed('$ss$/admin/images/free/newsletter.jpg') . '" />\');
                             form.append(this.createHeading("Join more than 12,000 subscribers and get access to the latest Sample Sliders, Tip & tricks and other exclusive contents directly to your inbox!"));
 
-                            form.append(\'<div class="n2-input-button"><input type="email" id="EMAIL" name="EMAIL" value="" /><a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">Get Free Sliders</a></div>\');
+                            form.append(\'<div class="n2-input-button"><input type="email" id="EMAIL" name="EMAIL" value="" /><a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">Get Free Sliders</a></div>\');
 
 
                             form.append(\'<input type="hidden" name="' . strtoupper(N2Platform::getPlatform()) . '" value="Yes" />\');

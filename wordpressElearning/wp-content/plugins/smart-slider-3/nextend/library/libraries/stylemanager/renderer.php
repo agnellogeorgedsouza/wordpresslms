@@ -4,8 +4,7 @@ N2Loader::import(array(
     'libraries.stylemanager.storage'
 ));
 
-class N2StyleRenderer
-{
+class N2StyleRenderer {
 
     public static $pre = '';
     public static $sets = array();
@@ -82,6 +81,7 @@ class N2StyleRenderer
         );
         $tabs[0] = array_merge(array(
             'backgroundcolor' => 'ffffff00',
+            'opacity'         => 100,
             'padding'         => '0|*|0|*|0|*|0|*|px',
             'boxshadow'       => '0|*|0|*|0|*|0|*|000000ff',
             'border'          => '0|*|solid|*|000000ff',
@@ -137,7 +137,7 @@ N2StyleRenderer::$mode = array(
         ),
         'preview'       => '<div class="{styleClassName}" style="width: 200px; height:100px;"></div>',
         'selectors'     => array(
-            '@pre@selector'                             => '@tab0',
+            '@pre@selector'       => '@tab0',
             '@pre@selector:HOVER' => '@tab1'
         )
     ),
@@ -153,7 +153,7 @@ N2StyleRenderer::$mode = array(
         ),
         'preview'       => '<div><a style="display:inline-block; margin:20px;" class="{styleClassName}" href="#" onclick="return false;">Button</a></div>',
         'selectors'     => array(
-            '@pre@selector'       => '@tab0',
+            '@pre@selector'                                                  => '@tab0',
             '@pre@selector:Hover, @pre@selector:ACTIVE, @pre@selector:FOCUS' => '@tab1'
         )
     ),
@@ -169,7 +169,7 @@ N2StyleRenderer::$mode = array(
         ),
         'preview'       => '<div class="{styleClassName}">Heading</div>',
         'selectors'     => array(
-            '@pre@selector'       => '@tab0',
+            '@pre@selector'                                                  => '@tab0',
             '@pre@selector:Hover, @pre@selector:ACTIVE, @pre@selector:FOCUS' => '@tab1'
         )
     ),
@@ -209,8 +209,7 @@ N2StyleRenderer::$mode = array(
 
 N2Loader::import('libraries.image.color');
 
-class N2Style
-{
+class N2Style {
 
     /**
      * @param string $tab
@@ -250,6 +249,10 @@ class N2Style
             $style .= 'background: RGBA(' . $rgba[0] . ',' . $rgba[1] . ',' . $rgba[2] . ',' . round($rgba[3] / 127, 2) . ');';
         }
         return $style;
+    }
+
+    public function parseOpacity($v) {
+        return 'opacity:' . (intval($v) / 100) . ';';
     }
 
     public function parsePadding($v) {

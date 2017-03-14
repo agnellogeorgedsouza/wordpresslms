@@ -1,16 +1,16 @@
 <?php
 
-class N2ElementGroup extends N2Element
-{
+class N2ElementGroup extends N2Element {
 
     var $_translateable = true;
 
     function fetchTooltip() {
         if ($this->_label) {
             return parent::fetchTooltip();
-        } else {
-            return '';
         }
+        return N2Html::tag('label', array(
+            'for' => $this->_id
+        ), '');
     }
 
     function fetchElement() {
@@ -28,7 +28,7 @@ class N2ElementGroup extends N2Element
 
             $html .= N2Html::tag('div', array(
                 'class' => 'n2-mixed-group ' . N2XmlHelper::getAttribute($element, 'class')
-            ), N2Html::tag('div', array('class' => 'n2-mixed-label'), $label) . N2Html::tag('div', array('class' => 'n2-mixed-element'), $field));
+            ), N2Html::tag('div', array('class' => 'n2-mixed-label'.(($el->hasLabel ? '' : ' n2-empty-group-label'))), $label) . N2Html::tag('div', array('class' => 'n2-mixed-element'), $field));
 
             if (N2XmlHelper::getAttribute($element, 'post') == 'break') {
                 $html .= '<br class="' . N2XmlHelper::getAttribute($element, 'class') . '" />';

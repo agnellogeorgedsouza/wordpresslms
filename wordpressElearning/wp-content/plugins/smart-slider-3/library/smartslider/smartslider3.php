@@ -2,7 +2,7 @@
 
 class N2SS3 {
 
-    public static $version = '3.0.37';
+    public static $version = '3.1.6';
 
     public static $product = 'smartslider3';
 
@@ -28,6 +28,8 @@ class N2SS3 {
         if (!empty(self::$source)) {
             $params['source'] = self::$source;
         }
+        $params['utm_campaign'] = N2SS3::$campaign;
+        $params['utm_medium']   = 'smartslider-' . N2Platform::getPlatform() . '-' . (N2SSPRO ? 'pro' : 'free');
         return 'http://smartslider3.com/why-upgrade-to-pro/?' . http_build_query($params);
     }
 
@@ -54,8 +56,12 @@ class N2SS3 {
                 return false;
             case 'PRODUCT_ASSET_NOT_AVAILABLE':
                 N2Message::error(sprintf(n2_('Demo slider is not available with the following ID: %s'), $key));
+                break;
             case 'ASSET_PREMIUM':
                 N2Message::error('Premium sliders are available in PRO version only!');
+                break;
+            case 'ASSET_VERSION':
+                N2Message::error('Please update your Smart Slider to the latest version to be able to import the selected sample slider!');
                 break;
             case 'LICENSE_EXPIRED':
                 N2Message::error('Your license key expired!');

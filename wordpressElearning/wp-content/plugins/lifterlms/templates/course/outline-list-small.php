@@ -5,6 +5,8 @@
 ?>
 <div class="llms-widget-syllabus<?php echo ( $collapse ) ? ' llms-widget-syllabus--collapsible' : ''; ?>">
 
+	<?php do_action( 'lifterlms_outline_before' ); ?>
+
 	<ul class="llms-course-outline">
 
 		<?php //get section data
@@ -13,6 +15,8 @@
 			<li class="llms-section<?php echo ( $collapse ) ? ( $current_section && $section['id'] == $current_section ) ? ' llms-section--opened' : ' llms-section--closed' : ''; ?>">
 
 				<div class="section-header">
+
+					<?php do_action( 'lifterlms_outline_before_header' ); ?>
 
 					<?php if ( $collapse ) : ?>
 
@@ -26,6 +30,8 @@
 					<?php endif; ?>
 
 					<span class="section-title"><?php echo $section['title']; ?></span>
+
+					<?php do_action( 'lifterlms_outline_after_header' ); ?>
 
 				</div>
 
@@ -44,10 +50,13 @@
 
 								</span>
 
+								<?php do_action( 'lifterlms_outline_before_lesson_title', $lesson ); ?>
+
 								<span class="lesson-title <?php echo ( $lesson['is_complete'] ? 'done' : '' ); ?>">
 
 									<?php $l = new LLMS_Lesson( $lesson['id'] ); ?>
-									<?php if ( '1' == $l->get_is_free() || LLMS_Course::check_enrollment( $course->id, get_current_user_id() ) ) : ?>
+
+									<?php if ( $l->is_free() || llms_is_user_enrolled( get_current_user_id(), $course->id ) ) : ?>
 
 										<a href="<?php echo get_permalink( $lesson['id'] ); ?>"><?php echo $lesson['title']; ?></a>
 
@@ -58,6 +67,8 @@
 									endif; ?>
 
 								</span>
+
+								<?php do_action( 'lifterlms_outline_after_lesson_title', $lesson ); ?>
 
 							</li>
 
@@ -75,9 +86,13 @@
 
 			<li class="llms-section llms-syllabus-footer">
 
+				<?php do_action( 'lifterlms_outline_before_footer' ); ?>
+
 				<a class="llms-button-text llms-collapse-toggle" data-action="open" href="#"><?php _e( 'Open All', 'lifterlms' ); ?></a>
 				<span>&middot;</span>
 				<a class="llms-button-text llms-collapse-toggle" data-action="close" href="#"><?php _e( 'Close All', 'lifterlms' ); ?></a>
+
+				<?php do_action( 'lifterlms_outline_after_footer' ); ?>
 
 			</li>
 
@@ -85,5 +100,6 @@
 
 	</ul>
 
+	<?php do_action( 'lifterlms_outline_after' ); ?>
 
 </div>

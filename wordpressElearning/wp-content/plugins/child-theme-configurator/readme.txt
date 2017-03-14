@@ -3,8 +3,8 @@ Contributors: lilaeamedia
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8QE5YJ8WE96AJ
 Tags: child, theme, child theme, child themes, custom styles, customize styles, customize theme, css, responsive, css editor, child theme editor, child theme generator, child theme creator, style, stylesheet, customizer, childtheme, childthemes
 Requires at least: 4.0
-Tested up to: 4.6
-Stable tag: 2.1.2
+Tested up to: 4.7.2
+Stable tag: 2.2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -287,8 +287,31 @@ https://www.youtube.com/watch?v=iBiiAgsK4G4
 7. Files tab
 
 == Changelog ==
-= 2.1.2 =
-* Fixes related to testing if CTC Pro is installed.
+= 2.2.4.1 =
+* Fix bug in parent dependencies
+
+= 2.2.4 =
+* Fix bug where stylesheet dependency arrays are not being initialized
+* Add action hook to extend copy theme settings feature
+* Display non active tabs, enable upgrade/register before config data is created
+
+= 2.2.3 =
+* Show raw results after Analysis to help debugging
+* Fix javascript not escaping quotes in input fields
+* Restored original ajax preview and added fallback method for cross-domain preview
+
+= 2.2.1 =
+* Fix in javascript affecting Pro users
+
+= 2.2.0 =
+* Cross domain Parse error
+* Showing "reconfigure" message on new install
+* Manual upgrade Pro from plugin
+* Add pre_option stylesheet and template filters to Preview class
+* Use child theme name on duplicate
+* Ability to force/unforce dependency
+* Identify and handle imported stylesheets, convert to links
+* Fixes related to testing if CTC Pro is installed
 
 = 2.1.1 =
 * change packer class to use standard < 5.4 array syntax
@@ -619,7 +642,7 @@ https://www.youtube.com/watch?v=iBiiAgsK4G4
 * Initial release.
 
 == Upgrade Notice ==
-2.1.0 Redesigned internal data structures to significantly decrease memory footprint.  
+2.2.4.1 IMPORTANT UPDATE - Fixes bug with parent theme stylesheet dependencies.
  
 == Query/Selector Tab ==
 

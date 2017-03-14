@@ -21,13 +21,6 @@
         this.animations = [];
 
         switch (this.parameters.type) {
-            case 'vertical':
-                if (this.parameters.parallax == 1) {
-                    this.animations.push(this._mainAnimationVertical);
-                } else {
-                    this.animations.push(this._mainAnimationVerticalParallax);
-                }
-                break;
             case 'no':
                 this.animations.push(this._mainAnimationNo);
                 break;
@@ -36,6 +29,27 @@
                 break;
             case 'crossfade':
                 this.animations.push(this._mainAnimationCrossFade);
+                break;
+            case 'vertical':
+                if (this.parameters.parallax == 1) {
+                    this.animations.push(this._mainAnimationVertical);
+                } else {
+                    this.animations.push(this._mainAnimationVerticalParallax);
+                }
+                break;
+            case 'vertical-reversed':
+                if (this.parameters.parallax == 1) {
+                    this.animations.push(this._mainAnimationVerticalReversed);
+                } else {
+                    this.animations.push(this._mainAnimationVerticalReversedParallax);
+                }
+                break;
+            case 'horizontal-reversed':
+                if (this.parameters.parallax == 1) {
+                    this.animations.push(this._mainAnimationHorizontalReversed);
+                } else {
+                    this.animations.push(this._mainAnimationHorizontalReversedParallax);
+                }
                 break;
             default:
                 if (this.parameters.parallax == 1) {
@@ -291,6 +305,24 @@
     NextendSmartSliderMainAnimationSimple.prototype._mainAnimationVerticalParallax = function (currentSlide, nextSlide, reversed) {
         this._showSlide(nextSlide);
         this.__mainAnimationDirection(currentSlide, nextSlide, 'vertical', this.parameters.parallax, reversed);
+    };
+
+    NextendSmartSliderMainAnimationSimple.prototype._mainAnimationHorizontalReversed = function (currentSlide, nextSlide, reversed, currentSlideIndex, nextSlideIndex) {
+        this.__mainAnimationDirection(currentSlide, nextSlide, 'horizontal', 1, !reversed, currentSlideIndex, nextSlideIndex);
+    };
+
+    NextendSmartSliderMainAnimationSimple.prototype._mainAnimationVerticalReversed = function (currentSlide, nextSlide, reversed, currentSlideIndex, nextSlideIndex) {
+        this._showSlide(nextSlide);
+        this.__mainAnimationDirection(currentSlide, nextSlide, 'vertical', 1, !reversed, currentSlideIndex, nextSlideIndex);
+    };
+
+    NextendSmartSliderMainAnimationSimple.prototype._mainAnimationHorizontalReversedParallax = function (currentSlide, nextSlide, reversed) {
+        this.__mainAnimationDirection(currentSlide, nextSlide, 'horizontal', this.parameters.parallax, !reversed);
+    };
+
+    NextendSmartSliderMainAnimationSimple.prototype._mainAnimationVerticalReversedParallax = function (currentSlide, nextSlide, reversed) {
+        this._showSlide(nextSlide);
+        this.__mainAnimationDirection(currentSlide, nextSlide, 'vertical', this.parameters.parallax, !reversed);
     };
 
     NextendSmartSliderMainAnimationSimple.prototype.__mainAnimationDirection = function (currentSlide, nextSlide, direction, parallax, reversed, currentSlideIndex, nextSlideIndex) {

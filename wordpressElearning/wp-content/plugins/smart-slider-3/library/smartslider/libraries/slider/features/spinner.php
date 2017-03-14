@@ -363,7 +363,7 @@ div.n2-ss-spinner-rectangle-4 {
 
         if (isset(self::$spinners[$this->slider->params->get('spinner', 'simpleWhite')]) && !empty(self::$spinners[$this->slider->params->get('spinner', 'simpleWhite')])) {
             N2CSS::addInline(self::$spinners[$this->slider->params->get('spinner', 'simpleWhite')][1]);
-            return $sliderHTML . '<div id="' . $slider->elementId . '-spinner">' . self::$spinners[$this->slider->params->get('spinner', 'simpleWhite')][0] . '</div>';
+            return $sliderHTML . '<div id="' . $slider->elementId . '-spinner" style="display: none;">' . self::$spinners[$this->slider->params->get('spinner', 'simpleWhite')][0] . '</div>';
         }
 
         return $sliderHTML;

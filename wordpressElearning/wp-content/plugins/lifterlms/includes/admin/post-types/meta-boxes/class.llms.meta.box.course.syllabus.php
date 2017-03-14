@@ -50,9 +50,9 @@ class LLMS_Meta_Box_Course_Syllabus {
 			foreach ( $query as $section ) : setup_postdata( $section );
 
 				if ($section_id == $section->ID) {
-					$html .= '<option value="'.$section->ID.'" selected="selected">'. get_the_title( $section->ID ) . '</option>';
+					$html .= '<option value="' . $section->ID . '" selected="selected">' . get_the_title( $section->ID ) . '</option>';
 				} else {
-					$html .= '<option value="'.$section->ID.'">'. get_the_title( $section->ID ) . '</option>';
+					$html .= '<option value="' . $section->ID . '">' . get_the_title( $section->ID ) . '</option>';
 				}
 
 			endforeach;
@@ -87,9 +87,9 @@ class LLMS_Meta_Box_Course_Syllabus {
 			foreach ( $query as $lesson ) : setup_postdata( $lesson );
 
 				if ($lesson_id == $lesson->ID) {
-						$html .= '<option value="'.$lesson->ID.'" data-lesson_id="' . $lesson_id . '" selected="selected">'. get_the_title( $lesson->ID ) . '</option>';
+						$html .= '<option value="' . $lesson->ID . '" data-lesson_id="' . $lesson_id . '" selected="selected">' . get_the_title( $lesson->ID ) . '</option>';
 				} else {
-					$html .= '<option value="'.$lesson->ID.'">'. get_the_title( $lesson->ID ) . '</option>';
+					$html .= '<option value="' . $lesson->ID . '">' . get_the_title( $lesson->ID ) . '</option>';
 				}
 
 			endforeach;
@@ -120,8 +120,8 @@ class LLMS_Meta_Box_Course_Syllabus {
 				<td>
 				<?php
 					echo '
-					Begins <input type="text" class="datepicker short" name="_course_dates_from" id="_course_dates_from" value="' . esc_attr( $course_dates_from ) . '" placeholder="' . _x( 'From&hellip;', 'placeholder', 'lifterlms' ) . ' YYYY-MM-DD" maxlength="10" />
-					Ends <input type="text" class="datepicker short" name="_course_dates_to" id="_course_dates_tp" value="' . esc_attr( $course_dates_to ) . '" placeholder="' . _x( 'To&hellip;', 'placeholder', 'lifterlms' ) . '  YYYY-MM-DD" maxlength="10" />';
+					Begins <input type="text" class="llms-datepicker short" name="_course_dates_from" id="_course_dates_from" value="' . esc_attr( $course_dates_from ) . '" placeholder="' . _x( 'From&hellip;', 'placeholder', 'lifterlms' ) . ' YYYY-MM-DD" maxlength="10" />
+					Ends <input type="text" class="llms-datepicker short" name="_course_dates_to" id="_course_dates_tp" value="' . esc_attr( $course_dates_to ) . '" placeholder="' . _x( 'To&hellip;', 'placeholder', 'lifterlms' ) . '  YYYY-MM-DD" maxlength="10" />';
 				?>
 				<br /><span class="description"><?php _e( 'Enter a Begin and/or End date for the course if it will only be available for a set period of time.', 'lifterlms' ); ?></span>
 				</td>

@@ -30,6 +30,9 @@ class N2Wordpress {
         } else if (class_exists('WPSEO_Frontend')) {
             // Fix for an issue with Yoast SEO
             add_action('template_redirect', 'N2Wordpress::outputStart');
+        } else if (class_exists('Gantry5\\Loader')) {
+            // Fix for Gantry 5 themes
+            add_action('template_redirect', 'N2Wordpress::outputStart');
         } else {
             add_action('wp_enqueue_scripts', 'N2Wordpress::outputStart');
             add_action('wp_head', 'N2Wordpress::outputStart');
@@ -56,7 +59,7 @@ class N2Wordpress {
             if (N2Settings::get('safemode') != 1) {
                 ob_start("N2Wordpress::platformRenderEnd");
                 ob_start();
-                if(class_exists('\\Warp\\Warp', false)){
+                if (class_exists('\\Warp\\Warp', false)) {
                     ob_start();
                 }
             }
@@ -107,7 +110,7 @@ class N2Wordpress {
             $buffer            = str_replace('<!--n2css-->', self::$nextend_css, $buffer);
             self::$nextend_css = '';
         }
-        
+
         if (self::$nextend_css != '' || self::$nextend_js != '') {
             return preg_replace('/<\/head>/', self::$nextend_css . self::$nextend_js . '</head>', $buffer, 1);
         }

@@ -1,26 +1,20 @@
 <?php
 /**
- * @author 		codeBOX
- * @package 	lifterLMS/Templates
+ * Lesson Video embed
+ * @since    1.0.0
+ * @version  3.1.1
  */
-
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 global $post;
 
-$course_not_class = get_post_custom( $post->ID );
+$lesson = new LLMS_Lesson( $post );
 
-if ( ! isset( $lesson )) {
-	$lesson = new LLMS_Lesson( $post->ID );
-}
-
-
-if ( ! $lesson->get_video() ) { return; }
+if ( ! $lesson->get( 'video_embed' ) ) { return; }
 ?>
 
 <div class="llms-video-wrapper">
 	<div class="center-video">
 		<?php echo $lesson->get_video(); ?>
 	</div>
-
 </div>

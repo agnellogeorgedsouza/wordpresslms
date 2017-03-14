@@ -4,7 +4,7 @@ if ( !defined( 'ABSPATH' ) ) exit;
 ?>
 
 <div id="file_options_panel" 
-        class="ctc-option-panel<?php echo 'file_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>" <?php echo $hidechild; ?>>
+        class="ctc-option-panel <?php $this->maybe_disable(); echo 'file_options' == $active_tab ? ' ctc-option-panel-active' : ''; ?>">
   <?php $this->render_file_form( 'parnt' ); ?>
   <?php $this->render_file_form( 'child' ); ?>
   <?php $this->render_image_form(); ?>

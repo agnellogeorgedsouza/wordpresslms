@@ -1,0 +1,22 @@
+body.login { 
+ background-image: url(http://www.wplearning.com/wp-content/uploads/2017/03/background-blue-image.jpg) !important;
+} 
+
+body.login div#login h1 a {
+    background-image: url( http://www.wplearning.com/wp-content/uploads/2017/03/imageedit_3_5206557620.png );
+    background-size: 229px 132px;
+}
+
+
+.login h1 a{width: 320px; height: 120px;}
+.login form {
+margin-left: -108px;
+margin-right: -41%;
+
+padding:30px;
+border: 1px solid rgba(0,0,0,.2);
+background-clip: padding-box;
+background: rgba(255, 255, 255, 0.6);
+box-shadow: 0 0 13px 3px rgba(0,0,0,.5);
+overflow: hidden;
+}

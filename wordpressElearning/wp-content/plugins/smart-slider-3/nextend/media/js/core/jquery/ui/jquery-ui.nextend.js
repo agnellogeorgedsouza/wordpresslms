@@ -8,11 +8,28 @@
 
     $.widget("ui.nextendAutocomplete", $.ui.autocomplete, {
         _renderMenu: function (ul, items) {
-            ul.removeAttr('tabindex');
+            ul.removeAttr('tabindex').addClass('n2 n2-ui-autocomplete');
+
+
+            ul.on('mousedown', $.proxy(nextend.context.setMouseDownArea, nextend.context, 'nextendAutocomplete')).on('DOMMouseScroll mousewheel', function (e) {
+                e.stopPropagation();
+            });
+
+            $(window).add('.n2-scrollable').on('scroll.n2-autocomplete', $.proxy(function () {
+                ul.position($.extend({of: this.element}, this.options.position))
+            }, this));
+
             var that = this;
             $.each(items, function (index, item) {
                 that._renderItemData(ul, item);
             });
+        },
+        _resizeMenu: function () {
+            this.menu.element.outerWidth(this.element.outerWidth(true));
+        },
+        close: function () {
+            $(window).add('.n2-scrollable').off('.n2-autocomplete');
+            this._superApply(arguments);
         }
     });
 
@@ -89,6 +106,9 @@
                 this.margins.bottom
             ];
             this.relativeContainer = c;
+        },
+        _normalizeRightBottom: function () {
+            "y" !== this.options.axis && "auto" !== this.helper.css("right") && (this.helper.width(this.helper.width()+0.5), this.helper.css("right", "auto")), "x" !== this.options.axis && "auto" !== this.helper.css("bottom") && (this.helper.height(this.helper.height()), this.helper.css("bottom", "auto"))
         }
     });
 
@@ -108,14 +128,14 @@
                         if (this != i.element[0]) i.elements.push({
                             item: this,
                             width: $t.outerWidth(), height: $t.outerHeight(),
-                            top: $o.top, left: $o.left,
+                            top: Math.round($o.top), left: Math.round($o.left),
                             backgroundColor: ''
                         });
                     });
                     var $o = o._containment.offset();
                     i.elements.push({
                         width: o._containment.width(), height: o._containment.height(),
-                        top: $o.top, left: $o.left,
+                        top: Math.round($o.top), left: Math.round($o.left),
                         backgroundColor: '#ff4aff'
                     });
                 }
@@ -168,45 +188,45 @@
                     var v = true;
                     if (Math.abs(l - x2) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: l - inst.helperProportions.width
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: l - inst.helperProportions.width
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left + inst.helperProportions.width);
                     } else if (Math.abs(l - x1) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: l
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: l
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left);
                     } else if (Math.abs(r - x1) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: r
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: r
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left);
                     } else if (Math.abs(r - x2) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: r - inst.helperProportions.width
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: r - inst.helperProportions.width
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left + inst.helperProportions.width);
                     } else if (Math.abs(hc - x2) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: hc - inst.helperProportions.width
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: hc - inst.helperProportions.width
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left + inst.helperProportions.width);
                     } else if (Math.abs(hc - x1) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: hc
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: hc
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left);
                     } else if (Math.abs(hc - xc) <= d) {
                         ui.position.left = inst._convertPositionTo("relative", {
-                            top: 0,
-                            left: hc - inst.helperProportions.width / 2
-                        }).left - inst.margins.left;
+                                top: 0,
+                                left: hc - inst.helperProportions.width / 2
+                            }).left - inst.margins.left;
                         setGridV(ui.position.left + inst.helperProportions.width / 2);
                     } else {
                         v = false;
@@ -225,42 +245,42 @@
                     var h = true;
                     if (Math.abs(t - y2) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {
-                            top: t - inst.helperProportions.height,
-                            left: 0
-                        }).top - inst.margins.top;
+                                top: t - inst.helperProportions.height,
+                                left: 0
+                            }).top - inst.margins.top;
                         setGridH(ui.position.top + inst.helperProportions.height);
                     } else if (Math.abs(t - y1) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {
-                            top: t,
-                            left: 0
-                        }).top - inst.margins.top;
+                                top: t,
+                                left: 0
+                            }).top - inst.margins.top;
                         setGridH(ui.position.top);
                     } else if (Math.abs(b - y1) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {top: b, left: 0}).top - inst.margins.top;
                         setGridH(ui.position.top);
                     } else if (Math.abs(b - y2) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {
-                            top: b - inst.helperProportions.height,
-                            left: 0
-                        }).top - inst.margins.top;
+                                top: b - inst.helperProportions.height,
+                                left: 0
+                            }).top - inst.margins.top;
                         setGridH(ui.position.top + inst.helperProportions.height);
                     } else if (Math.abs(vc - y2) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {
-                            top: vc - inst.helperProportions.height,
-                            left: 0
-                        }).top - inst.margins.top;
+                                top: vc - inst.helperProportions.height,
+                                left: 0
+                            }).top - inst.margins.top;
                         setGridH(ui.position.top + inst.helperProportions.height);
                     } else if (Math.abs(vc - y1) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {
-                            top: vc,
-                            left: 0
-                        }).top - inst.margins.top;
+                                top: vc,
+                                left: 0
+                            }).top - inst.margins.top;
                         setGridH(ui.position.top);
                     } else if (Math.abs(vc - yc) <= d) {
                         ui.position.top = inst._convertPositionTo("relative", {
-                            top: vc - inst.helperProportions.height / 2,
-                            left: 0
-                        }).top - inst.margins.top;
+                                top: vc - inst.helperProportions.height / 2,
+                                left: 0
+                            }).top - inst.margins.top;
                         setGridH(ui.position.top + inst.helperProportions.height / 2);
                     } else {
                         h = false;
@@ -303,18 +323,21 @@
             i.gridV2 = $('<div class="n2-grid n2-grid-v"></div>').appendTo(o._containment);
             i.elements = [];
             if (typeof o.smartguides == 'function') {
+
                 var guides = o.smartguides();
                 if (guides) {
+                    var containmentOffset = o._containment.offset();
                     guides.each(function () {
                         var $t = $(this);
-                        var $o = $t.position();
+                        var $o = $t.offset();
                         if (this != i.element[0]) i.elements.push({
                             item: this,
-                            width: $t.outerWidth(), height: $t.outerHeight(),
-                            top: $o.top, left: $o.left
+                            width: $t.outerWidth(),
+                            height: $t.outerHeight(),
+                            top: Math.round($o.top - containmentOffset.top),
+                            left: Math.round($o.left - containmentOffset.left)
                         });
                     });
-                    var $o = o._containment.offset();
                     i.elements.push({
                         item: o._containment,
                         width: o._containment.width(), height: o._containment.height(),

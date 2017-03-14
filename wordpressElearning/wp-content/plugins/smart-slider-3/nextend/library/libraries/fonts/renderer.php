@@ -4,8 +4,7 @@ N2Loader::import(array(
     'libraries.fonts.storage'
 ));
 
-class N2FontRenderer
-{
+class N2FontRenderer {
 
     public static $defaultFont = 'Montserrat';
 
@@ -155,7 +154,7 @@ N2FontRenderer::$mode = array(
         ),
         'preview'       => '<div class="{fontClassName}">' . n2_('Button') . '</div>',
         'selectors'     => array(
-            '@pre@selector'       => '@tab0',
+            '@pre@selector'                                                  => '@tab0',
             '@pre@selector:HOVER, @pre@selector:ACTIVE, @pre@selector:FOCUS' => '@tab1'
         )
     ),
@@ -171,7 +170,7 @@ N2FontRenderer::$mode = array(
         ),
         'preview'       => '<div class="{fontClassName}">' . n2_('Button') . '</div>',
         'selectors'     => array(
-            '@pre@selector a'       => '@tab0',
+            '@pre@selector a'                                                      => '@tab0',
             '@pre@selector a:HOVER, @pre@selector a:ACTIVE, @pre@selector a:FOCUS' => '@tab1'
         )
     ),
@@ -204,8 +203,8 @@ N2FontRenderer::$mode = array(
         ),
         'preview'       => '<div class="{fontClassName}">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do <a href="#">test link</a> incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in <a href="#">test link</a> velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat <a href="#">test link</a>, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>',
         'selectors'     => array(
-            '@pre@selector'         => '@tab0',
-            '@pre@selector a'       => '@tab1',
+            '@pre@selector'                                                        => '@tab0',
+            '@pre@selector a'                                                      => '@tab1',
             '@pre@selector a:HOVER, @pre@selector a:ACTIVE, @pre@selector a:FOCUS' => '@tab2'
         )
     ),
@@ -221,7 +220,7 @@ N2FontRenderer::$mode = array(
         ),
         'preview'       => '',
         'selectors'     => array(
-            '@pre@selector'                                => '@tab0',
+            '@pre@selector'                                                                           => '@tab0',
             '@pre@selector.n2-active, @pre@selector:HOVER, @pre@selector:ACTIVE, @pre@selector:FOCUS' => '@tab1'
         )
     )
@@ -229,8 +228,7 @@ N2FontRenderer::$mode = array(
 
 N2Loader::import('libraries.image.color');
 
-class N2FontStyle
-{
+class N2FontStyle {
 
     public static $fontSize = false;
 
@@ -331,7 +329,12 @@ class N2FontStyle
      * @return string
      */
     public function parseBold($v) {
+        return $this->parseWeight($v);
+    }
+
+    public function parseWeight($v) {
         if ($v == '1') return 'font-weight: bold;';
+        if ($v > 1) return 'font-weight: ' . intval($v) . ';';
         return 'font-weight: normal;';
     }
 

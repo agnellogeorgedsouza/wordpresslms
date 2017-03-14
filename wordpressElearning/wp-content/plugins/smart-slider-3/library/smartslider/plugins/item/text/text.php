@@ -19,6 +19,8 @@ class N2SSPluginItemText extends N2SSPluginItemAbstract
         "valign" => "top"
     );
 
+    protected $group = 'Basic';
+
     public function __construct() {
         $this->_title = n2_x('Text', 'Slide item');
     }

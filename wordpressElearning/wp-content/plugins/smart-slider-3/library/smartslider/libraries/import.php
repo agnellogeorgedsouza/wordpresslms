@@ -19,9 +19,17 @@ class N2SmartSliderImport {
         $this->restore = true;
     }
 
-    public function import($filePathOrData, $imageImportMode = 'clone', $linkedVisuals = 1, $isFilePath = true) {
-        $zip        = new N2ZipRead();
-        $importData = $zip->read_zip($filePathOrData, $isFilePath);
+    public function import($filePathOrData, $groupID = 0, $imageImportMode = 'clone', $linkedVisuals = 1, $isFilePath = true) {
+        if (!$isFilePath) {
+            $folder = sys_get_temp_dir();
+            if(!is_writable($folder)){
+                $folder = N2Filesystem::getNotWebCachePath();
+            }
+            $tmp = tempnam($folder, 'ss3');
+            file_put_contents($tmp, $filePathOrData);
+            $filePathOrData = $tmp;
+        }
+        $importData = N2ZipRead($filePathOrData);
         if (!isset($importData['data'])) {
             if (array_key_exists("slider.ss2", $importData)) {
                 N2Message::error(n2_('You can\'t import sliders from Smart Slider 2.'));
@@ -31,22 +39,31 @@ class N2SmartSliderImport {
 
         $this->backup = unserialize($importData['data']);
 
+
+        if (!empty($this->backup->slider['type']) && $this->backup->slider['type'] == 'group') {
+            // Groups can not be imported into groups
+            $groupID = 0;
+        }
+
         $this->sectionTranslation = array();
         $this->importVisuals($this->backup->visuals, $linkedVisuals);
 
 
         $sliderModel = new N2SmartsliderSlidersModel();
+
+
         if ($this->restore) {
             $this->sliderId = $sliderModel->restore($this->backup->slider);
         } else {
-            $this->sliderId = $sliderModel->import($this->backup->slider);
+            $this->sliderId = $sliderModel->import($this->backup->slider, $groupID);
         }
         if (!$this->sliderId) {
             return false;
         }
+
         switch ($imageImportMode) {
             case 'clone':
-                $images     = $importData['images'];
+                $images     = isset($importData['images']) ? $importData['images'] : array();
                 $imageStore = new N2StoreImage('slider' . $this->sliderId, true);
                 foreach ($images AS $file => $content) {
                     $localImage = $imageStore->makeCache($file, $content);
@@ -57,7 +74,7 @@ class N2SmartSliderImport {
                     }
                     if (!$this->imageTranslation[$file]) {
                         $this->imageTranslation[$file] = array_search($file, $this->backup->imageTranslation);
-                    }                    
+                    }
                 }
                 break;
             case 'update':
@@ -70,6 +87,9 @@ class N2SmartSliderImport {
             default:
                 break;
         }
+        if (!empty($this->backup->slider['thumbnail'])) {
+            $sliderModel->setThumbnail($this->sliderId, $this->fixImage($this->backup->slider['thumbnail']));
+        }
 
         foreach ($this->backup->NextendImageManager_ImageData AS $image => $data) {
             $data['tablet']['image'] = $this->fixImage($data['tablet']['image']);
@@ -77,85 +97,101 @@ class N2SmartSliderImport {
             N2ImageManager::addImageData($this->fixImage($image), $data);
         }
 
-        unset($importData);
-
         if (empty($this->backup->slider['type'])) {
             $this->backup->slider['type'] = 'simple';
         }
 
-        $class = 'N2SSPluginType' . $this->backup->slider['type'];
-        N2Loader::importPath(call_user_func(array(
+
+        if ($this->backup->slider['type'] == 'group') {
+            /**
+             * Import the sliders for the group!
+             */
+            foreach ($importData['sliders'] AS $k => $slider) {
+                $import = new N2SmartSliderImport();
+                if ($this->restore) {
+                    $import->enableRestore();
+                }
+                $import->import($slider, $this->sliderId, $imageImportMode, $linkedVisuals, false);
+            }
+        } else {
+
+            unset($importData);
+
+            $class = 'N2SSPluginType' . $this->backup->slider['type'];
+            N2Loader::importPath(call_user_func(array(
+                    $class,
+                    "getPath"
+                )) . NDS . 'backup');
+
+            $class = 'N2SmartSliderBackup' . $this->backup->slider['type'];
+            call_user_func_array(array(
                 $class,
-                "getPath"
-            )) . NDS . 'backup');
-
-        $class = 'N2SmartSliderBackup' . $this->backup->slider['type'];
-        call_user_func_array(array(
-            $class,
-            'import'
-        ), array(
-            $this,
-            &$this->backup->slider
-        ));
+                'import'
+            ), array(
+                $this,
+                &$this->backup->slider
+            ));
 
 
-        $enabledWidgets = array();
-        $plugins        = array();
-        N2Plugin::callPlugin('sswidget', 'onWidgetList', array(&$plugins));
+            $enabledWidgets = array();
+            $plugins        = array();
+            N2Plugin::callPlugin('sswidget', 'onWidgetList', array(&$plugins));
 
-        $params = $this->backup->slider['params'];
-        foreach ($plugins AS $k => $v) {
-            $widget = $params->get('widget' . $k);
-            if ($widget && $widget != 'disabled') {
-                $enabledWidgets[$k] = $widget;
+            $params = $this->backup->slider['params'];
+            foreach ($plugins AS $k => $v) {
+                $widget = $params->get('widget' . $k);
+                if ($widget && $widget != 'disabled') {
+                    $enabledWidgets[$k] = $widget;
+                }
             }
-        }
 
-        foreach ($enabledWidgets AS $k => $v) {
-            $class = 'N2SSPluginWidget' . $k . $v;
-            if (class_exists($class, false)) {
-                $params->fillDefault(call_user_func(array(
-                    $class,
-                    'getDefaults'
-                )));
+            foreach ($enabledWidgets AS $k => $v) {
+                $class = 'N2SSPluginWidget' . $k . $v;
+                if (class_exists($class, false)) {
+                    $params->fillDefault(call_user_func(array(
+                        $class,
+                        'getDefaults'
+                    )));
 
-                call_user_func_array(array(
-                    $class,
-                    'prepareImport'
-                ), array(
-                    $this,
-                    $params
-                ));
-            } else {
-                unset($enabledWidgets);
+                    call_user_func_array(array(
+                        $class,
+                        'prepareImport'
+                    ), array(
+                        $this,
+                        $params
+                    ));
+                } else {
+                    unset($enabledWidgets);
+                }
             }
-        }
-
-        $sliderModel->importUpdate($this->sliderId, $params);
-
-        $generatorTranslation = array();
-        N2Loader::import("models.generator", "smartslider");
-        $generatorModel = new N2SmartsliderGeneratorModel();
-        foreach ($this->backup->generators as $generator) {
-            $generatorTranslation[$generator['id']] = $generatorModel->import($generator);
-        }
 
 
-        $slidesModel = new N2SmartsliderSlidesModel();
-        for ($i = 0; $i < count($this->backup->slides); $i++) {
-            $slide              = $this->backup->slides[$i];
-            $slide['params']    = new N2Data($slide['params'], true);
-            $slide['thumbnail'] = $this->fixImage($slide['thumbnail']);
-            $slide['params']->set('backgroundImage', $this->fixImage($slide['params']->get('backgroundImage')));
-            $slide['params']->set('ligthboxImage', $this->fixImage($slide['params']->get('ligthboxImage')));
-            $slide['params']->set('link', $this->fixLightbox($slide['params']->get('link')));
+            $sliderModel->importUpdate($this->sliderId, $params);
 
-            $slide['slide'] = N2SmartSliderLayer::prepareImport($this, $slide['slide']);
-
-            if (isset($generatorTranslation[$slide['generator_id']])) {
-                $slide['generator_id'] = $generatorTranslation[$slide['generator_id']];
+            $generatorTranslation = array();
+            N2Loader::import("models.generator", "smartslider");
+            $generatorModel = new N2SmartsliderGeneratorModel();
+            foreach ($this->backup->generators as $generator) {
+                $generatorTranslation[$generator['id']] = $generatorModel->import($generator);
             }
-            $slidesModel->import($slide, $this->sliderId);
+
+
+            $slidesModel = new N2SmartsliderSlidesModel();
+            for ($i = 0; $i < count($this->backup->slides); $i++) {
+                $slide              = $this->backup->slides[$i];
+                $slide['params']    = new N2Data($slide['params'], true);
+                $slide['thumbnail'] = $this->fixImage($slide['thumbnail']);
+                $slide['params']->set('backgroundImage', $this->fixImage($slide['params']->get('backgroundImage')));
+                $slide['params']->set('ligthboxImage', $this->fixImage($slide['params']->get('ligthboxImage')));
+                $slide['params']->set('link', $this->fixLightbox($slide['params']->get('link')));
+
+                $slide['slide'] = N2SmartSliderLayer::prepareImport($this, $slide['slide']);
+
+                if (isset($generatorTranslation[$slide['generator_id']])) {
+                    $slide['generator_id'] = $generatorTranslation[$slide['generator_id']];
+                }
+                $slidesModel->import($slide, $this->sliderId);
+            }
         }
         return $this->sliderId;
     }

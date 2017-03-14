@@ -13,6 +13,8 @@ class N2SSPluginItemYouTube extends N2SSPluginItemAbstract {
         "height" => 180
     );
 
+    protected $group = 'Media';
+
     public function __construct() {
         $this->_title = n2_x('YouTube', 'Slide item');
     }
@@ -20,7 +22,7 @@ class N2SSPluginItemYouTube extends N2SSPluginItemAbstract {
     function getTemplate($slider) {
         return N2Html::tag('div', array(
             "style" => 'width: 100%; height: 100%; min-height: 50px; background: url({image}) no-repeat 50% 50%; background-size: cover;'
-        ), '<img class="n2-video-play n2-ow" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
+        ), '<img class="n2-video-play n2-ow" alt="" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
     }
 
     function _render($data, $itemId, $slider, $slide) {
@@ -61,14 +63,14 @@ class N2SSPluginItemYouTube extends N2SSPluginItemAbstract {
         $style = '';
 
         $hasImage = 0;
-        $image    = $data->get('image');
+        $image    = $slide->fill($data->get('image'));
 
         $playImage = '';
         if (!empty($image)) {
-            $style    = 'cursor:pointer; background: url(' . N2ImageHelper::fixed($data->get('image')) . ') no-repeat 50% 50%; background-size: cover';
+            $style    = 'cursor:pointer; background: url(' . N2ImageHelper::fixed($image) . ') no-repeat 50% 50%; background-size: cover';
             $hasImage = 1;
             if ($data->get('playbutton', 1) != 0) {
-                $playImage = '<img class="n2-video-play n2-ow" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>';
+                $playImage = '<img class="n2-video-play n2-ow" alt="" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>';
             }
         }
 
@@ -83,9 +85,11 @@ class N2SSPluginItemYouTube extends N2SSPluginItemAbstract {
     }
 
     function _renderAdmin($data, $itemId, $slider, $slide) {
+        $image = $slide->fill($data->get('image'));
+        $data->set('image', $image);
         return N2Html::tag('div', array(
             "style" => 'width: 100%; height: 100%; background: url(' . N2ImageHelper::fixed($data->getIfEmpty('image', '$system$/images/placeholder/video.png')) . ') no-repeat 50% 50%; background-size: cover;'
-        ), '<img class="n2-video-play n2-ow" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
+        ), '<img class="n2-video-play n2-ow" alt="" src="' . N2ImageHelperAbstract::SVGToBase64('$ss$/images/play.svg') . '"/>');
     }
 
     function parseYoutubeUrl($youTubeUrl) {
@@ -110,7 +114,8 @@ class N2SSPluginItemYouTube extends N2SSPluginItemAbstract {
             'vq'           => 'default',
             'center'       => 0,
             'loop'         => 0,
-            'reset'        => 0
+            'reset'        => 0,
+            'start'        => '0'
         );
     }
 
@@ -119,6 +124,7 @@ class N2SSPluginItemYouTube extends N2SSPluginItemAbstract {
     }
 
     public function getFilled($slide, $data) {
+        $data->set('image', $slide->fill($data->get('image', '')));
         $data->set('youtubeurl', $slide->fill($data->get('youtubeurl', '')));
         return $data;
     }

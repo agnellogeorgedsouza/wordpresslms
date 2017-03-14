@@ -127,6 +127,7 @@ class N2SmartSliderTypeSimple extends N2SmartSliderType {
         } else if (!$this->javaScriptProperties['bgAnimations']['global']) {
             $this->javaScriptProperties['bgAnimations'] = 0;
         }
+
     }
 
     private function parseBackgroundAnimations($backgroundAnimation) {
@@ -198,8 +199,10 @@ class N2SmartSliderTypeSimple extends N2SmartSliderType {
         }
 
         return N2Html::tag('div', array('class' => 'n2-ss-slider-background-video-container'), N2Html::tag('video', $attributes + array(
-                'class'     => 'n2-ss-slider-background-video',
-                'data-mode' => $params->get('backgroundVideoMode', 'fill')
+                'class'              => 'n2-ss-slider-background-video',
+                'data-mode'          => $params->get('backgroundVideoMode', 'fill'),
+                'playsinline'        => 1,
+                'webkit-playsinline' => 1
             ), $sources));
 
     }

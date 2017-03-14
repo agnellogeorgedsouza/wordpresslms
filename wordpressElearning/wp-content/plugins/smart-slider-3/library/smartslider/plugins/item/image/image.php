@@ -2,8 +2,7 @@
 
 N2Loader::import('libraries.plugins.N2SliderItemAbstract', 'smartslider');
 
-class N2SSPluginItemImage extends N2SSPluginItemAbstract
-{
+class N2SSPluginItemImage extends N2SSPluginItemAbstract {
 
     var $_identifier = 'image';
 
@@ -12,6 +11,8 @@ class N2SSPluginItemImage extends N2SSPluginItemAbstract
     protected $layerProperties = array("width" => 200);
 
     private static $style = '';
+
+    protected $group = 'Basic';
 
     public function __construct() {
         $this->_title = n2_x('Image', 'Slide item');
@@ -122,6 +123,12 @@ class N2SSPluginItemImage extends N2SSPluginItemAbstract
         $data->set('image', $import->fixImage($data->get('image')));
         $data->set('style', $import->fixSection($data->get('style')));
         $data->set('link', $import->fixLightbox($data->get('link')));
+        return $data;
+    }
+
+    public function prepareFixed($data) {
+        $data->set('image', $this->fixImage($data->get('image')));
+        $data->set('link', $this->fixLightbox($data->get('link')));
         return $data;
     }
 }

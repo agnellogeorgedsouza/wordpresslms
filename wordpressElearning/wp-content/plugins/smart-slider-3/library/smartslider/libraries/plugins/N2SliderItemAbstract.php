@@ -12,6 +12,8 @@ abstract class N2SSPluginItemAbstract extends N2PluginBase {
 
     protected $priority = 1;
 
+    protected $group = '';
+
     protected $isEditor = false;
 
     public function onNextendSliderItemList(&$list) {
@@ -25,7 +27,8 @@ abstract class N2SSPluginItemAbstract extends N2PluginBase {
             json_encode($this->getValues()),
             $this->getPath(),
             $this->layerProperties,
-            $this->priority
+            $this->priority,
+            $this->group
         );
     }
 
@@ -132,16 +135,18 @@ abstract class N2SSPluginItemAbstract extends N2PluginBase {
 
         N2Loader::import('libraries.link.link');
 
-        list($link, $target) = (array)N2Parse::parse($data->get('link', '#|*|'));
-        if (!$target) {
-            $target = '';
-        }
+        list($link, $target, $rel) = array_pad((array)N2Parse::parse($data->get('link', '#|*||*|')), 3, '');
 
-        if ($link != '#' || $renderEmpty === true) {
+        if (($link != '#' && !empty($link)) || $renderEmpty === true) {
+
             $link = N2LinkParser::parse($slide->fill($link), $attributes, $this->isEditor);
-            return N2Html::link($content, $link, $attributes + array(
-                    "target" => $target
-                ));
+            if (!empty($target) && $target != '_self') {
+                $attributes['target'] = $target;
+            }
+            if (!empty($rel)) {
+                $attributes['rel'] = $rel;
+            }
+            return N2Html::link($content, $link, $attributes);
         }
         return $content;
     }
@@ -171,6 +176,27 @@ abstract class N2SSPluginItemAbstract extends N2PluginBase {
      */
     public function prepareImport($import, $data) {
         return $data;
+    }
+
+    public function prepareFixed($data) {
+        return $data;
+    }
+
+    public function fixImage($image) {
+        return N2ImageHelper::fixed($image);
+    }
+
+    public function fixLightbox($url) {
+        preg_match('/^([a-zA-Z]+)\[(.*)](.*)/', $url, $matches);
+        if (!empty($matches) && $matches[1] == 'lightbox') {
+            $images    = explode(',', $matches[2]);
+            $newImages = array();
+            foreach ($images AS $image) {
+                $newImages[] = N2ImageHelper::fixed($image);
+            }
+            $url = 'lightbox[' . implode(',', $newImages) . ']' . $matches[3];
+        }
+        return $url;
     }
 
     protected static function optimizeImage($image, $data, $slider) {

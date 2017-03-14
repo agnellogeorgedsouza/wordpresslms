@@ -4,8 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /**
 *
 */
-class LLMS_Metabox_Number_Field extends LLMS_Metabox_Field implements Meta_Box_Field_Interface
-{
+class LLMS_Metabox_Number_Field extends LLMS_Metabox_Field implements Meta_Box_Field_Interface {
+
 
 	function __construct( $_field ) {
 
@@ -36,6 +36,9 @@ class LLMS_Metabox_Number_Field extends LLMS_Metabox_Field implements Meta_Box_F
 			class="<?php echo esc_attr( $this->field['class'] ); ?>"
 			value="<?php echo $this->meta; ?>" size="30"
 			step="<?php echo isset( $this->field['meta'] ) ? $this->field['meta'] : 'any'; ?>"
+			<?php if ( isset( $this->field['required'] ) && $this->field['required'] ) : ?>
+			required="required"
+			<?php endif; ?>
 		/>
 
 		<?php

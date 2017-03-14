@@ -4,7 +4,7 @@ Donate link: https://web-dorado.com/products/wordpress-slider-plugin.html
 Tags: image slider, slider, slideshow, image, images, responsive, shortcode, widget, jquery, gallery, swipe, layer
 Requires at least: 3.4
 Tested up to: 4.6
-Stable tag: 1.1.53
+Stable tag: 1.1.55
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,8 +122,16 @@ After downloading the ZIP file of the slider plugin,
 
 == Changelog ==
 
+
+= 1.1.55 =
+* Added: Merge sliders.    
+* Fixed: Double quotes in custom javascript.   
+
+= 1.1.54 =
+* Fixed: Layer RotatInDownRight effect saving.    
+
 = 1.1.53 =
-Fixed: Slider add new button under the message.    
+* Fixed: Slider add new button under the message.    
 
 = 1.1.52 =
 * Added: Option to hide slider on mobile.       

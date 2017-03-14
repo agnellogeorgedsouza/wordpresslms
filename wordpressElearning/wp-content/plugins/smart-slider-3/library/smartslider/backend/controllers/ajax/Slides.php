@@ -23,7 +23,7 @@ class N2SmartsliderBackendSlidesControllerAjax extends N2SmartSliderControllerAj
 
         if (N2Request::getInt('save')) {
 
-            if (N2SmartSliderSettings::get('slide-as-file', 0) && isset($_FILES['slide']) && isset(N2Request::$storage['slide'])) {
+            if (N2SmartSliderSettings::get('slide-as-file', 0) && isset($_FILES['slide']) && N2Request::getVar('slide')) {
                 N2Request::$storage['slide']['slide'] = N2Filesystem::readFile($_FILES['slide']['tmp_name']);
             }
 
@@ -58,7 +58,7 @@ class N2SmartsliderBackendSlidesControllerAjax extends N2SmartSliderControllerAj
 
         if (N2Request::getInt('save')) {
 
-            if (N2SmartSliderSettings::get('slide-as-file', 0) && isset($_FILES['slide']) && isset(N2Request::$storage['slide'])) {
+            if (N2SmartSliderSettings::get('slide-as-file', 0) && isset($_FILES['slide']) && N2Request::getVar('slide')) {
                 N2Request::$storage['slide']['slide'] = N2Filesystem::readFile($_FILES['slide']['tmp_name']);
             }
 

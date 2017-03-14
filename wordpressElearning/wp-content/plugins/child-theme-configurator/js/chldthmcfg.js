@@ -2,7 +2,7 @@
  *  Script: chldthmcfg.js
  *  Plugin URI: http://www.childthemeconfigurator.com/
  *  Description: Handles jQuery, AJAX and other UI
- *  Version: 2.1.2
+ *  Version: 2.2.4.1
  *  Author: Lilaea Media
  *  Author URI: http://www.lilaeamedia.com/
  *  License: GPLv2
@@ -34,9 +34,9 @@
             return '';
         },
         
-        getname: function( template ){
-            var stylesheet  = ( 'child' === template ? $.chldthmcfg.currchild : $.chldthmcfg.currparnt );
-            return window.ctcAjax.themes[ template ][ stylesheet ].Name;
+        getname: function( themetype ){
+            var stylesheet  = ( 'child' === themetype ? $.chldthmcfg.currchild : $.chldthmcfg.currparnt );
+            return window.ctcAjax.themes[ themetype ][ stylesheet ].Name;
         },
         
         frascii: function( str ) {
@@ -149,9 +149,10 @@
             if ( $( '#ctc_theme_parnt' ).length ) {
                 var self    = this,
                     parent  = $( '#ctc_theme_parnt' ).val(),
-                    slugbase= parent + '-child',
+                    child   = $( '#ctc_theme_child' ).length ? $( '#ctc_theme_child' ).val() : '',
+                    slugbase= ( '' !== child && $( '#ctc_child_type_duplicate' ).is( ':checked' ) ) ? child : parent + '-child',
                     slug    = slugbase,
-                    name    = $.chldthmcfg.getname( 'parnt' ) + ' Child',
+                    name    = ( '' !== child && $( '#ctc_child_type_duplicate' ).is( ':checked' ) ) ? $.chldthmcfg.getname( 'child' ) : $.chldthmcfg.getname( 'parnt' ) + ' Child',
                     suffix  = '',
                     padded  = '',
                     pad     = '00';
@@ -538,10 +539,10 @@
                 valarr = {},
                 nextval = isnew ? value.child.pop() : null; // if new rule, pop off the top before counting
             //**console.log( value );
-            $.each( [ 'parnt', 'child' ], function( ndx, template ) {
+            $.each( [ 'parnt', 'child' ], function( ndx, themetype ) {
                 // iterate through parent and child val arrays and populate new assoc array with parent/child for each rulevalid
-                if ( !self.is_empty( value[ template ] ) ) {
-                    $.each( value[ template ], function( ndx2, val ) {
+                if ( !self.is_empty( value[ themetype ] ) ) {
+                    $.each( value[ themetype ], function( ndx2, val ) {
                         if ( isnew ) {
                             // if new rule, increment new rulevalid but do not add to parent/child assoc array
                             if ( parseInt( val[ 2 ] ) >= parseInt( nextval[ 2 ] ) ) {
@@ -552,7 +553,7 @@
                             if ( self.is_empty( valarr[ val[ 2 ] ] ) ) {
                                 valarr[ val[ 2 ] ] = {};
                             }
-                            valarr[ val[ 2 ] ][ template ] = val;
+                            valarr[ val[ 2 ] ][ themetype ] = val;
                         }
                     } );
                 }
@@ -603,7 +604,7 @@
                     if ( !self.is_empty( pval.names ) ) {
                         $.each( pval.names, function( namendx, newname ) {
                             newname = ( self.is_empty( newname ) ? '' : newname );
-                            html += '<div class="ctc-child-input-cell clear">';
+                            html += '<div class="ctc-child-input-cell ctc-clear">';
                             var id = 'ctc_' + seq + '_child_' + rule + '_' + qsid + '_' + ndx + newname,
                                 newval;
                             if ( false === ( newval = cval.values.shift() ) ) {
@@ -846,13 +847,13 @@
                 self.jquery_exception( exn, 'New Property Menu' );
             }
         },
-        set_theme_params: function( template, themedir ) {
-            $( '#ctc_child_author' ).val( window.ctcAjax.themes[ template ][ themedir ].Author );
-            $( '#ctc_child_version' ).val( window.ctcAjax.themes[ template ][ themedir ].Version );
-            $( '#ctc_child_authoruri' ).val( window.ctcAjax.themes[ template ][ themedir ].AuthorURI );
-            $( '#ctc_child_themeuri' ).val( window.ctcAjax.themes[ template ][ themedir ].ThemeURI );
-            $( '#ctc_child_descr' ).val( window.ctcAjax.themes[ template ][ themedir ].Descr );
-            $( '#ctc_child_tags' ).val( window.ctcAjax.themes[ template ][ themedir ].Tags );
+        set_theme_params: function( themetype, themedir ) {
+            $( '#ctc_child_author' ).val( window.ctcAjax.themes[ themetype ][ themedir ].Author );
+            $( '#ctc_child_version' ).val( window.ctcAjax.themes[ themetype ][ themedir ].Version );
+            $( '#ctc_child_authoruri' ).val( window.ctcAjax.themes[ themetype ][ themedir ].AuthorURI );
+            $( '#ctc_child_themeuri' ).val( window.ctcAjax.themes[ themetype ][ themedir ].ThemeURI );
+            $( '#ctc_child_descr' ).val( window.ctcAjax.themes[ themetype ][ themedir ].Descr );
+            $( '#ctc_child_tags' ).val( window.ctcAjax.themes[ themetype ][ themedir ].Tags );
         },
         update_form: function() {
             var self        = this,
@@ -954,7 +955,6 @@
             $( '#ctc_sel_ovrd_query_selected' ).text( value );
             $( '#ctc_sel_ovrd_selector' ).val( '' );
             $( '#ctc_sel_ovrd_selector_selected' ).html( '&nbsp;' );
-            //$( '#ctc_sel_ovrd_rule_inputs' ).html( '' );
             self.load_selectors();
             self.scrolltop();
         },
@@ -1607,6 +1607,9 @@
                 // these elements are not replaced so use direct selector events
                 $( '.nav-tab' ).on( 'click', function( e ) {
                     e.preventDefault();
+                    if ( $( e.target ).hasClass( 'ctc-disabled' ) ) {
+                        return false;
+                    }
                     // clear the notice box
                     //set_notice( '' );
                     $( '.ctc-query-icon,.ctc-status-icon' ).remove();
@@ -1614,11 +1617,11 @@
                     self.focus_panel( id );
                 } );
                 
-                $( '#view_child_options, #view_parnt_options' ).on( 'click', function(  ){ 
-                    if ( $( this ).hasClass( 'ajax-pending' ) ) {
+                $( '#view_child_options, #view_parnt_options' ).on( 'click', function( e ){ 
+                    if ( $( e.target ).hasClass( 'ajax-pending' ) || $( e.target ).hasClass( 'ctc-disabled' ) ) {
                         return false;
                     }
-                    $( this ).addClass( 'ajax-pending' );
+                    $( e.target ).addClass( 'ajax-pending' );
                     self.css_preview( $( this ).attr( 'id' ) ); 
                 } );
                 
@@ -1709,12 +1712,12 @@
             return 'undefined' === typeof str ? '' : str.replace( /\-css$/, '' );
         },
         show_loading: function( resubmit, text ) {
-            var template    = $.chldthmcfg.existing ? 'child' : 'parnt',
-                name = text ? text : $.chldthmcfg.getname( template ),
+            var themetype    = $.chldthmcfg.existing ? 'child' : 'parnt',
+                name = text ? text : $.chldthmcfg.getname( themetype ),
                 notice = '<strong class="ctc_analyze_loading"><span class="spinner is-active"></span>' + 
                 $.chldthmcfg.getxt( resubmit ? 'anlz1' : 'anlz2' ) + ' ' + name + '...</strong>';
-            self.noticediv = ( 'child' === template ? '' : '' );
-            $( '#' + template + '_analysis_notice' ).html( notice );
+            self.noticediv = ( 'child' === themetype ? '' : '' );
+            $( '#' + themetype + '_analysis_notice' ).html( notice );
             //$( 'html, body' ).animate( { scrollTop: 0 }, 'slow' );        
         },
         hide_loading: function() {
@@ -1727,218 +1730,238 @@
          * Fetch website home page and parse <head> for linked stylesheets
          * Use this to store dependencies and to mark them to be parsed as "default" stylesheets
          * Detects other signals for configuration heuristics during child theme setup.
+         * If the initial ajax get requst fails, attempt request via a WordPress ajax call, 
+         * which executes an http request on the server side. If both methods fail, notify user.
          */
-        analyze_theme: function( template ) { 
+        analyze_theme: function( themetype ) { 
             //console.log( 'analyze_theme' );
             var self        = this,
                 now         = Math.floor( $.now() / 1000 ),
-                //template    = $.chldthmcfg.existing ? 'child' : 'parnt',
-                stylesheet  = ( 'child' === template ? $.chldthmcfg.currchild : $.chldthmcfg.currparnt ),
+                stylesheet  = ( 'child' === themetype ? $.chldthmcfg.currchild : $.chldthmcfg.currparnt ),
                 testparams  = '&template=' + $.chldthmcfg.currparnt + '&stylesheet=' + stylesheet + '&now=' + now,
-                homeurl     = self.setssl( window.ctcAjax.homeurl ),
+                homeurl     = self.setssl( window.ctcAjax.homeurl ), // window.ctcAjax.homeurl, //
+                url         = homeurl + testparams;
+            
+            self.analysis[ themetype ].url = url;
+
+            /**
+             * First, try to fetch home page using ajax get
+             */
+            //console.log( 'Fetching home page: ' + url );
+            $.get( url, function( data ) {
+                self.parse_page( themetype, data );
+                $( document ).trigger( 'analysisdone' );
+            } ).fail( function( xhr, status, err ){
+                //console.log( status );
+                //console.log( err );
+                //console.log( xhr );
+                /**
+                 * if this fails due to cross domain or other issue, 
+                 * try fetching using ajax call that requests page on server side.
+                 */
+                self.analysis[ themetype ].signals.xhrgeterr = err;
+                $.ajax( { 
+                    url:        window.ctcAjax.ajaxurl,  
+                    data:       {
+                        action:     'ctc_analyze',
+                        stylesheet: stylesheet,
+                        template:   $.chldthmcfg.currparnt,
+                        _wpnonce:   $( '#_wpnonce' ).val(),
+                    },
+                    dataType:   'json',
+                    type:       'POST'
+                } ).done( function( data ) {
+                    if ( data.signals.httperr ) {
+                        /**
+                         * if both methods fail, there is a problem.
+                         */
+                        self.analysis[ themetype ].signals.failure = 1;
+                        self.analysis[ themetype ].signals.httperr = data.signals.httperr;
+                    } else {
+                        self.parse_page( themetype, data.body );
+                    }
+                    $( document ).trigger( 'analysisdone' );
+                } ).fail( function( xhr, status, err ){
+                    /**
+                     * if xhr fails both times there is a bigger problem.
+                     */
+                    //console.log( xhr );
+                    self.analysis[ themetype ].signals.failure = 1;
+                    self.analysis[ themetype ].signals.xhrajaxerr = err;
+                    $( document ).trigger( 'analysisdone' );
+                } );
+            } );
+        },
+        parse_page: function( themetype, body ){
+
+            var self        = this,
                 themepath   = window.ctcAjax.theme_uri.replace( /^https?:\/\//, '' ),
-                url         = homeurl + testparams,
-                escaped     = self.escrgx( $.chldthmcfg.currparnt ) + ( 'child' === template ? '|' + self.escrgx( stylesheet ) : '' ),
+                stylesheet  = ( 'child' === themetype ? $.chldthmcfg.currchild : $.chldthmcfg.currparnt ),
+                escaped     = self.escrgx( $.chldthmcfg.currparnt ) + ( 'child' === themetype ? '|' + self.escrgx( stylesheet ) : '' ),
                 regex_link  = new RegExp( "<link( rel=[\"']stylesheet[\"'] id=['\"]([^'\"]+?)['\"])?[^>]+?" +
                     self.escrgx( themepath ) + '/(' + escaped + ')/([^"\']+\\.css)(\\?[^"\']+)?["\'][^>]+>', 'gi' ),
                 regex_err   = /<br \/>\n[^\n]+?(fatal|strict|notice|warning|error)[\s\S]+?<br \/>/gi,
-                msg,
-                queue,
-                csslink,
                 themeloaded = 0, // flag when style.css link is detected
                 testloaded  = 0, // flag when test link is detected
-                analysis    = {
-                    url: url,
-                    deps: [[],[]],
-                    signals: {
-                        /*
-                        err_fatal:          0,
-                        err_fnf:            0,
-                        err_other:          0,
-                        ctc_sep_loaded:     0,
-                        ctc_ext_loaded:     0,
-                        ctc_child_loaded:   0,
-                        ctc_parnt_loaded:   0,
-                        thm_wrong_order:    0,
-                        thm_past_wphead:    0,
-                        thm_unregistered:   0,
-                        thm_parnt_loaded:   0,
-                        thm_child_loaded:   0,
-                        thm_is_ctc:         0,
-                        thm_no_styles:      0,
-                        thm_notheme:        0
-                        */
-                    },
-                    queue: [],
-                    irreg: []
-                };
+                msg,
+                queue,
+                csslink;
 
-            //console.log( 'Fetching home page: ' + url );
-            $.get( url, function( data ) {
-                //data = '';
-                if ( 'child' === template ) {
-                    //console.log( data );
-                }
-                // retrieve enqueued stylesheet ids 
-                if ( ( queue = data.match( /BEGIN WP QUEUE\n([\s\S]*?)\nEND WP QUEUE/ ) ) ) {
-                    analysis.queue = queue[ 1 ].split(/\n/);
-                    //console.log( 'QUEUE:' );
-                    //console.log( analysis.queue );
-                } else {
-                    analysis.queue = [];
-                    analysis.signals.thm_noqueue = 1;
-                    //analysis.signals.failure = 1;
-                    //console.log( 'NO QUEUE' );
-                }
-                if ( ( queue = data.match( /BEGIN CTC IRREGULAR\n([\s\S]*?)\nEND CTC IRREGULAR/ ) ) ) {
-                    analysis.irreg = queue[ 1 ].split(/\n/);
-                } else {
-                    analysis.irreg = [];
-                }
-                if ( data.match( /CHLD_THM_CFG_IGNORE_PARENT/ ) ) {
-                    analysis.signals.thm_ignoreparnt = 1;
-                    //console.log( 'thm_ignoreparnt' );
-                }
-                if ( data.match( /IS_CTC_THEME/ ) ) {
-                    analysis.signals.thm_is_ctc = 1;
-                    //console.log( 'thm_is_ctc' );
-                }
-                
-                if ( data.match( /NO_CTC_STYLES/ ) ) {
-                    analysis.signals.thm_no_styles = 1;
-                    //console.log( 'thm_no_styles' );
-                }
-                if ( data.match( /HAS_CTC_IMPORT/ ) ) {
-                    analysis.signals.thm_has_import = 1;
-                    //console.log( 'thm_has_import' );
-                }
+            if ( 'child' === themetype ) {
+                //console.log( body );
+            }
+            // retrieve enqueued stylesheet ids 
+            if ( ( queue = body.match( /BEGIN WP QUEUE\n([\s\S]*?)\nEND WP QUEUE/ ) ) ) {
+                self.analysis[ themetype ].queue = queue[ 1 ].split(/\n/);
+                //console.log( 'QUEUE:' );
+                //console.log( self.analysis[ themetype ].queue );
+            } else {
+                self.analysis[ themetype ].queue = [];
+                self.analysis[ themetype ].signals.thm_noqueue = 1;
+                //self.analysis[ themetype ].signals.failure = 1;
+                //console.log( 'NO QUEUE' );
+            }
+            if ( ( queue = body.match( /BEGIN CTC IRREGULAR\n([\s\S]*?)\nEND CTC IRREGULAR/ ) ) ) {
+                self.analysis[ themetype ].irreg = queue[ 1 ].split(/\n/);
+            } else {
+                self.analysis[ themetype ].irreg = [];
+            }
+            if ( body.match( /CHLD_THM_CFG_IGNORE_PARENT/ ) ) {
+                self.analysis[ themetype ].signals.thm_ignoreparnt = 1;
+                //console.log( 'thm_ignoreparnt' );
+            }
+            if ( body.match( /IS_CTC_THEME/ ) ) {
+                self.analysis[ themetype ].signals.thm_is_ctc = 1;
+                //console.log( 'thm_is_ctc' );
+            }
 
-                // remove comments to avoid flagging conditional stylesheets ( IE compatability, etc. )
-                data = data.replace( /<!\-\-[\s\S]*?\-\->/g, '' );
-                //console.log( 'PARSE:' );
-                while ( ( msg = regex_err.exec( data ) ) ) {
-                    var errstr = msg[ 0 ].replace( /<.*?>/g, '' );
-                    self.phperr[ template ].push( errstr );
-                    analysis.signals.err_php = 1;
-                    if ( errstr.match( /Fatal error/i ) ) {
-                        analysis.signals.err_fatal = 1;
-                    } 
-                    //else if ( errstr.match( /(FileNotFoundException|Failed opening|failed to open stream)/i ) ) {
-                        //analysis.signals.err_fnf = 1;
-                    //}
-                }
-                while ( ( csslink = regex_link.exec( data ) ) ) {
-                    var stylesheetid    = self.trmcss( csslink[ 2 ] ),
-                        stylesheettheme = csslink[ 3 ], 
-                        stylesheetpath  = csslink[ 4 ],
-                        linktheme       = $.chldthmcfg.currparnt === stylesheettheme ? 'parnt' : 'child',
-                        noid            = 0;
-                        //console.log( 'stylesheetid: ' + stylesheetid + ' stylesheetpath: ' + stylesheetpath );
-                        // flag stylesheet links that have no id or are not in wp_styles 
-                    if ( '' === stylesheetid || -1 === $.inArray( stylesheetid, analysis.queue ) ) {
-                        noid = 1;
-                        //console.log( 'no id for ' + stylesheetpath + '!' );
-                    } else if ( 0 === stylesheetid.indexOf( 'chld_thm_cfg' ) ) { // handle ctc-generated links
-                        // console.log( 'ctc link detected: ' + stylesheetid + ' themeloaded: ' + themeloaded );
-                        if ( stylesheetpath.match( /^ctc\-style([\-\.]min)?\.css$/ ) ) {
-                            //console.log( 'separate stylesheet detected' );
-                            themeloaded = 1;
-                            analysis.signals.ctc_sep_loaded = 1; // flag that separate stylesheet has been detected
-                        } else if ( stylesheetpath.match( /^ctc\-genesis([\-\.]min)?\.css$/ ) ) {
-                            //console.log( 'genesis stylesheet detected' );
-                            themeloaded = 1;
-                            analysis.signals.ctc_gen_loaded = 1; // flag that genesis "parent" has been detected
-                        } else if ( stylesheetid.match( /$chld_thm_cfg_ext/ ) ) {
-                            analysis.signals.ctc_ext_loaded = 1; // flag that external stylesheet link detected
-                            analysis.deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
-                        } else if ( 'chld_thm_cfg_child' === stylesheetid ) {
-                            analysis.signals.ctc_child_loaded = 1; // flag that ctc child stylesheet link detected
-                            analysis.deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
-                        } else if ( 'chld_thm_cfg_parent' === stylesheetid ) {
-                            analysis.signals.ctc_parnt_loaded = 1; // flag that ctc parent stylesheet link detected
-                            analysis.deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
-                            if ( themeloaded ){
-                                //console.log( 'parent link out of sequence' );
-                                analysis.signals.ctc_parnt_reorder = 1; // flag that ctc parent stylesheet link out of order
-                            }
+            if ( body.match( /NO_CTC_STYLES/ ) ) {
+                self.analysis[ themetype ].signals.thm_no_styles = 1;
+                //console.log( 'thm_no_styles' );
+            }
+            if ( body.match( /HAS_CTC_IMPORT/ ) ) {
+                self.analysis[ themetype ].signals.thm_has_import = 1;
+                //console.log( 'thm_has_import' );
+            }
+
+            // remove comments to avoid flagging conditional stylesheets ( IE compatability, etc. )
+            body = body.replace( /<!\-\-[\s\S]*?\-\->/g, '' );
+            //console.log( 'PARSE:' );
+            while ( ( msg = regex_err.exec( body ) ) ) {
+                var errstr = msg[ 0 ].replace( /<.*?>/g, '' );
+                self.phperr[ themetype ].push( errstr );
+                self.analysis[ themetype ].signals.err_php = 1;
+                if ( errstr.match( /Fatal error/i ) ) {
+                    self.analysis[ themetype ].signals.err_fatal = 1;
+                } 
+                //else if ( errstr.match( /(FileNotFoundException|Failed opening|failed to open stream)/i ) ) {
+                    //analysis.signals.err_fnf = 1;
+                //}
+            }
+            while ( ( csslink = regex_link.exec( body ) ) ) {
+                var stylesheetid    = self.trmcss( csslink[ 2 ] ),
+                    stylesheettheme = csslink[ 3 ], 
+                    stylesheetpath  = csslink[ 4 ],
+                    linktheme       = $.chldthmcfg.currparnt === stylesheettheme ? 'parnt' : 'child',
+                    noid            = 0;
+                    //console.log( 'stylesheetid: ' + stylesheetid + ' stylesheetpath: ' + stylesheetpath );
+                    // flag stylesheet links that have no id or are not in wp_styles 
+                if ( '' === stylesheetid || -1 === $.inArray( stylesheetid, self.analysis[ themetype ].queue ) ) {
+                    noid = 1;
+                    //console.log( 'no id for ' + stylesheetpath + '!' );
+                } else if ( 0 === stylesheetid.indexOf( 'chld_thm_cfg' ) ) { // handle ctc-generated links
+                    // console.log( 'ctc link detected: ' + stylesheetid + ' themeloaded: ' + themeloaded );
+                    if ( stylesheetpath.match( /^ctc\-style([\-\.]min)?\.css$/ ) ) {
+                        //console.log( 'separate stylesheet detected' );
+                        themeloaded = 1;
+                        self.analysis[ themetype ].signals.ctc_sep_loaded = 1; // flag that separate stylesheet has been detected
+                    } else if ( stylesheetpath.match( /^ctc\-genesis([\-\.]min)?\.css$/ ) ) {
+                        //console.log( 'genesis stylesheet detected' );
+                        themeloaded = 1;
+                        self.analysis[ themetype ].signals.ctc_gen_loaded = 1; // flag that genesis "parent" has been detected
+                    } else if ( stylesheetid.match( /$chld_thm_cfg_ext/ ) ) {
+                        self.analysis[ themetype ].signals.ctc_ext_loaded = 1; // flag that external stylesheet link detected
+                        self.analysis[ themetype ].deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
+                    } else if ( 'chld_thm_cfg_child' === stylesheetid ) {
+                        self.analysis[ themetype ].signals.ctc_child_loaded = 1; // flag that ctc child stylesheet link detected
+                        self.analysis[ themetype ].deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
+                    } else if ( 'chld_thm_cfg_parent' === stylesheetid ) {
+                        self.analysis[ themetype ].signals.ctc_parnt_loaded = 1; // flag that ctc parent stylesheet link detected
+                        self.analysis[ themetype ].deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
+                        if ( themeloaded ){
+                            //console.log( 'parent link out of sequence' );
+                            self.analysis[ themetype ].signals.ctc_parnt_reorder = 1; // flag that ctc parent stylesheet link out of order
                         }
-                        continue;
                     }
-                    // flag main theme stylesheet link
-                    if ( stylesheetpath.match( /^style([\-\.]min)?\.css$/ ) ) {
-                        //console.log( linktheme + ' theme stylesheet detected: ' + stylesheettheme + '/' + stylesheetpath ); 
-                        themeloaded = 1; // flag that main theme stylesheet has been detected
-                        // if main theme stylesheet link has no id then it is unregistered ( hard-wired )
-                        if ( 'parnt' === linktheme ) {
-                            if ( noid ) {
-                                analysis.signals.thm_parnt_loaded = 'thm_unregistered';
-                            } else {
-                                analysis.signals.thm_parnt_loaded = stylesheetid;
-                                // check that parent stylesheet is loaded before child stylesheet
-                                if ( 'child' === template && analysis.signals.thm_child_loaded ) {
-                                    analysis.signals.ctc_parnt_reorder = 1;
-                                }
-                            }
-                        } else {
-                            analysis.signals.thm_child_loaded = noid ? 'thm_unregistered' : stylesheetid;
-                        }
+                    continue;
+                }
+                // flag main theme stylesheet link
+                if ( stylesheetpath.match( /^style([\-\.]min)?\.css$/ ) ) {
+                    //console.log( linktheme + ' theme stylesheet detected: ' + stylesheettheme + '/' + stylesheetpath ); 
+                    themeloaded = 1; // flag that main theme stylesheet has been detected
+                    // if main theme stylesheet link has no id then it is unregistered ( hard-wired )
+                    if ( 'parnt' === linktheme ) {
                         if ( noid ) {
-                            if ( testloaded ) {
-                                analysis.signals.thm_past_wphead = 1;
-                                analysis.deps[ themeloaded ].push( [ 'thm_past_wphead', stylesheetpath ] );
-                                //console.log( 'Unreachable theme stylesheet detected' );
-                            } else {
-                                analysis.signals.thm_unregistered = 1;
-                                analysis.deps[ themeloaded ].push( [ 'thm_unregistered', stylesheetpath ] );
-                                //console.log( 'Unregistered theme stylesheet detected' );
-                            }
+                            self.analysis[ themetype ].signals.thm_parnt_loaded = 'thm_unregistered';
                         } else {
-                            analysis.deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
-                            //console.log( 'Theme stylesheet OK!' );
+                            self.analysis[ themetype ].signals.thm_parnt_loaded = stylesheetid;
+                            // check that parent stylesheet is loaded before child stylesheet
+                            if ( 'child' === themetype && self.analysis[ themetype ].signals.thm_child_loaded ) {
+                                self.analysis[ themetype ].signals.ctc_parnt_reorder = 1;
+                            }
                         }
-                        
-                    } else if ( 'ctc-test.css' === stylesheetpath ) { // flag test stylesheet link
-                        //console.log( 'end of queue reached' );
-                        testloaded = 1; // flag that test queue has been detected ( end of wp_head )
                     } else {
-                        var err = null;
-                        // if stylesheet link has id and loads before main theme stylesheet, add it as a dependency
-                        // otherwise add it as a parse option
-                        if ( noid ) {
-                            err = 'dep_unregistered';
-                        }
-                        if ( testloaded ) {
-                            if ( themeloaded ) {
-                                //console.log( 'Unreachable stylesheet detected!' + stylesheetpath );
-                                err = 'css_past_wphead';
-                            } else {
-                                err = 'dep_past_wphead';
-                            }
-                        }
-                        // Flag stylesheet links that have no id and are loaded after main theme stylesheet. 
-                        // This indicates loading outside of wp_head()
-                        if ( err ) {
-                            analysis.signals[ err ] = 1;
-                            stylesheetid = err;
-                        }
-                        analysis.deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
+                        self.analysis[ themetype ].signals.thm_child_loaded = noid ? 'thm_unregistered' : stylesheetid;
                     }
+                    if ( noid ) {
+                        if ( testloaded ) {
+                            self.analysis[ themetype ].signals.thm_past_wphead = 1;
+                            self.analysis[ themetype ].deps[ themeloaded ].push( [ 'thm_past_wphead', stylesheetpath ] );
+                            //console.log( 'Unreachable theme stylesheet detected' );
+                        } else {
+                            self.analysis[ themetype ].signals.thm_unregistered = 1;
+                            self.analysis[ themetype ].deps[ themeloaded ].push( [ 'thm_unregistered', stylesheetpath ] );
+                            //console.log( 'Unregistered theme stylesheet detected' );
+                        }
+                    } else {
+                        self.analysis[ themetype ].deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
+                        //console.log( 'Theme stylesheet OK!' );
+                    }
+
+                } else if ( 'ctc-test.css' === stylesheetpath ) { // flag test stylesheet link
+                    //console.log( 'end of queue reached' );
+                    testloaded = 1; // flag that test queue has been detected ( end of wp_head )
+                } else {
+                    var err = null;
+                    // if stylesheet link has id and loads before main theme stylesheet, add it as a dependency
+                    // otherwise add it as a parse option
+                    if ( noid ) {
+                        err = 'dep_unregistered';
+                    }
+                    if ( testloaded ) {
+                        if ( themeloaded ) {
+                            //console.log( 'Unreachable stylesheet detected!' + stylesheetpath );
+                            err = 'css_past_wphead';
+                        } else {
+                            err = 'dep_past_wphead';
+                        }
+                    }
+                    // Flag stylesheet links that have no id and are loaded after main theme stylesheet. 
+                    // This indicates loading outside of wp_head()
+                    if ( err ) {
+                        self.analysis[ themetype ].signals[ err ] = 1;
+                        stylesheetid = err;
+                    } else {
+                        self.dependencies[ stylesheetid ] = stylesheetpath;
+                    }
+                    self.analysis[ themetype ].deps[ themeloaded ].push( [ stylesheetid, stylesheetpath ] );
                 }
-                if ( ! themeloaded ){
-                    analysis.signals.thm_notheme = 1; // flag that no theme stylesheet has been detected
-                }
-                data = null; // send page to garbage
-                self.analysis[ template ] = analysis;
-                $( document ).trigger( 'analysisdone' );
-            } ).fail( function( xhr, status, err ){
-                //console.log( xhr );
-                analysis.signals.failure = 1;
-                analysis.signals.xhrerr = err;
-                self.analysis[ template ] = analysis;
-                $( document ).trigger( 'analysisdone' );
-            } );
+            }
+            if ( ! themeloaded ){
+                self.analysis[ themetype ].signals.thm_notheme = 1; // flag that no theme stylesheet has been detected
+            }
         },
-        
+
         /**
          * Uses analysis data to auto configure form, pass parameters
          * for child theme setup and display results to user.
@@ -1946,8 +1969,8 @@
         css_notice: function() {
             //console.log( 'in css_notice' );
             var self        = this,
-                template    = $.chldthmcfg.existing ? 'child' : 'parnt',
-                name        = $.chldthmcfg.getname( template ),
+                themetype    = $.chldthmcfg.existing ? 'child' : 'parnt',
+                name        = $.chldthmcfg.getname( themetype ),
                 hidden      = '',
                 notice      = { 
                     notices:    [],
@@ -1960,22 +1983,23 @@
                 resubmit    = 0,
                 resubmitdata= {},
                 anlz,
-                debugtxt = '';
+                debugtxt    = '',
+                dep_inputs;
 
-            if ( self.analysis[ template ].signals.failure || 
-                ( self.analysis[ template ].signals.thm_noqueue && !self.phperr[ template ].length ) ) {
-                if ( $( '#ctc_is_debug' ).is( ':checked' ) ) {
-                    debugtxt = $.chldthmcfg.getxt( 'anlz33' ).replace(/%1/, '<a href="' + self.analysis[ template ].url + '" target="_new">' ).replace( /%2/, '</a>' );
-                }
+            if ( self.analysis[ themetype ].signals.failure || 
+                ( self.analysis[ themetype ].signals.thm_noqueue && !self.phperr[ themetype ].length ) ) {
+                //if ( $( '#ctc_is_debug' ).is( ':checked' ) ) {
+                    debugtxt = $.chldthmcfg.getxt( 'anlz33' ).replace(/%1/, '<a href="' + self.analysis[ themetype ].url + '" target="_new">' ).replace( /%2/, '</a>' );
+                //}
                 notice.notices.push( {
                     headline:   $.chldthmcfg.getxt( 'anlz4', name ),
-                    msg: $.chldthmcfg.getxt( 'anlz5' ) + debugtxt, // + self.analysis[ template ].signals.xhrerr,
+                    msg: $.chldthmcfg.getxt( 'anlz5' ) + debugtxt,
                     style: 'notice-warning'
                 } );
             } else {
                 // test errors
-                if ( self.phperr[ template ].length ) {
-                    $.each( self.phperr[ template ], function( index, err ) {
+                if ( self.phperr[ themetype ].length ) {
+                    $.each( self.phperr[ themetype ], function( index, err ) {
                         if ( err.match( /Fatal error/i ) ) {
                             errnotice.style    = 'error';
                             errnotice.headline =  $.chldthmcfg.getxt( 'anlz8', name );
@@ -1996,8 +2020,8 @@
                         $.chldthmcfg.getxt( 'anlz7' );
                     notice.notices.push( errnotice );
                 }
-                if ( self.analysis[ template ].signals.thm_past_wphead || self.analysis[ template ].signals.dep_past_wphead ) { 
-                    // || self.analysis[ template ].signals.css_past_wphead ){
+                if ( self.analysis[ themetype ].signals.thm_past_wphead || self.analysis[ themetype ].signals.dep_past_wphead ) { 
+                    // || self.analysis[ themetype ].signals.css_past_wphead ){
                     notice.notices.push( {
                         headline: $.chldthmcfg.getxt( 'anlz9' ),
                         style: 'notice-warning',
@@ -2006,10 +2030,10 @@
                     $( '#ctc_repairheader' ).prop( 'checked', true );
                     $( '#ctc_repairheader_container' ).show();
                 }
-                if ( self.analysis[ template ].signals.thm_unregistered ) {
+                if ( self.analysis[ themetype ].signals.thm_unregistered ) {
                     if (
-                        !self.analysis[ template ].signals.ctc_child_loaded &&
-                        !self.analysis[ template ].signals.ctc_sep_loaded ){
+                        !self.analysis[ themetype ].signals.ctc_child_loaded &&
+                        !self.analysis[ themetype ].signals.ctc_sep_loaded ){
                     // test for stylesheet enqueue issues
                         notice.notices.push( {
                             headline: $.chldthmcfg.getxt( 'anlz11' ),
@@ -2020,7 +2044,7 @@
                         $( '#ctc_repairheader' ).prop( 'checked', true );
                     }
                 }
-                if ( 'child' === template ) {
+                if ( 'child' === themetype ) {
                     if ( self.analysis.child.signals.ctc_parnt_reorder ) {
                         //console.log( 'reorder flag detected, resubmitting.' );
                         resubmit = 1;
@@ -2035,7 +2059,7 @@
                         } );
                         resubmit = 1;
                     }
-                    if ( self.analysis[ template ].signals.ctc_gen_loaded ) {
+                    if ( self.analysis[ themetype ].signals.ctc_gen_loaded ) {
                         notice.notices.push( {
                             headline: $.chldthmcfg.getxt( 'anlz31' ),
                             msg: $.chldthmcfg.getxt( 'anlz32' ),
@@ -2079,19 +2103,19 @@
                     }
                 }
                 // automatically set form inputs based on current analysis
-                if ( self.analysis[ template ].signals.ctc_sep_loaded || self.analysis[ template ].signals.ctc_gen_loaded ){
+                if ( self.analysis[ themetype ].signals.ctc_sep_loaded || self.analysis[ themetype ].signals.ctc_gen_loaded ){
                     //console.log( 'Separate stylesheet detected' );
                     $( '#ctc_handling_separate' ).prop( 'checked', true );
                 }
                 if ( !notice.notices.length ) {
                     notice.notices.push( { 
-                        headline: '' + ( 'child' === template ? $.chldthmcfg.getxt( 'anlz17' ) : $.chldthmcfg.getxt( 'anlz18' ) ) + '',
+                        headline: '' + ( 'child' === themetype ? $.chldthmcfg.getxt( 'anlz17' ) : $.chldthmcfg.getxt( 'anlz18' ) ) + '',
                         style: 'updated',
                         msg: ''
                     } );
                 }
                 
-                if ( 'child' === template && self.analysis.child.signals.thm_has_import ) {
+                if ( 'child' === themetype && self.analysis.child.signals.thm_has_import ) {
                     notice.notices.push( {
                         headline: $.chldthmcfg.getxt( 'anlz21' ),
                         msg: $.chldthmcfg.getxt( 'anlz22' ),
@@ -2100,7 +2124,7 @@
                     //console.log( 'Import parent detected' );
                     $( '#ctc_enqueue_import' ).prop( 'checked', true );
                 }
-                if ( self.analysis[ template ].signals.thm_ignoreparnt || self.analysis[ template ].signals.ctc_gen_loaded ){
+                if ( self.analysis[ themetype ].signals.thm_ignoreparnt || self.analysis[ themetype ].signals.ctc_gen_loaded ){
                     //console.log( 'Ignore parent detected' );
                     $( '#ctc_ignoreparnt' ).prop( 'checked', true );
                     if ( !$( '#ctc_enqueue_none' ).is( ':checked' ) ) {
@@ -2111,19 +2135,14 @@
                 } else {
                     $( '#ctc_ignoreparnt' ).prop( 'checked', false );
                 }
-                if ( self.analysis[ template ].signals.thm_keepdeps ){
-                    $( '#ctc_keepdeps' ).prop( 'checked', true );
-                } else {
-                    $( '#ctc_keepdeps' ).prop( 'checked', false );
-                }
-                if ( !self.analysis[ template ].signals.ctc_sep_loaded && 
-                    !self.analysis[ template ].signals.ctc_gen_loaded && 
-                    !self.analysis[ template ].signals.ctc_child_loaded && 
-                    !self.analysis[ template ].signals.thm_unregistered && 
-                    !self.analysis[ template ].signals.thm_past_wphead && 
-                    self.analysis[ template ].deps[ 1 ].length ) {
+                if ( !self.analysis[ themetype ].signals.ctc_sep_loaded && 
+                    !self.analysis[ themetype ].signals.ctc_gen_loaded && 
+                    !self.analysis[ themetype ].signals.ctc_child_loaded && 
+                    !self.analysis[ themetype ].signals.thm_unregistered && 
+                    !self.analysis[ themetype ].signals.thm_past_wphead && 
+                    self.analysis[ themetype ].deps[ 1 ].length ) {
                     var sheets = '';
-                    $.each( self.analysis[ template ].deps[ 1 ], function( ndx, el ) {
+                    $.each( self.analysis[ themetype ].deps[ 1 ], function( ndx, el ) {
                         if ( el[ 1 ].match( /^style([\-\.]min)?\.css$/ ) ) { return; }
                         sheets += '<li>' + el[ 1 ] + "</li>\n";
                     } );
@@ -2136,7 +2155,7 @@
                     } );
                     }
                 }
-                if ( 'child' === template && self.analysis[ template ].signals.thm_parnt_loaded ) {
+                if ( 'child' === themetype && self.analysis[ themetype ].signals.thm_parnt_loaded ) {
                     //if ( !$( '#ctc_enqueue_none' ).is( ':checked' ) ) {
                         notice.notices.push( {
                             headline: $.chldthmcfg.getxt( 'anlz25' ),
@@ -2187,10 +2206,10 @@
                     notice.msg +
                     '</div>' );
                     $.chldthmcfg.bind_dismiss( $out );
-                    $out.hide().appendTo( '#' + template + '_analysis_notice' ).slideDown();
+                    $out.hide().appendTo( '#' + themetype + '_analysis_notice' ).slideDown();
                 } );
                 
-                if ( $( '#ctc_is_debug' ).is( ':checked' ) ) {
+                //if ( $( '#ctc_is_debug' ).is( ':checked' ) ) {
                     anlz = '<div style="background-color:#ddd;padding:6px">' +
                         '<div class="ctc-section-toggle" id="ctc_analysis_obj">' + 
                         $.chldthmcfg.getxt( 'anlz30' ) + 
@@ -2200,8 +2219,29 @@
                         JSON.stringify( self.analysis, null, 2 ) + 
                         '</textarea></div></div>';
                 
-                    $( anlz ).appendTo( '#' + template + '_analysis_notice' );
+                    $( anlz ).appendTo( '#' + themetype + '_analysis_notice' );
 
+                //}
+                
+                // v2.1.3 remove stylesheet dependencies
+                dep_inputs = '';
+                // console.log( self.dependencies );
+                $.each( self.dependencies, function( ndx, el ){
+                    // console.log( 'setting dependecy: ' + ndx + ' ' + el );
+                    if ( el ) {
+                        dep_inputs += '<label><input class="ctc_checkbox ctc-themeonly" id="ctc_forcedep_' + ndx +
+                        '" name="ctc_forcedep[]" type="checkbox" value="' + ndx + '" autocomplete="off" ' +
+                        ( -1 !== $.inArray( ndx, window.ctcAjax.forcedep ) ? 'checked' : '' ) +
+                        ' />' + ndx + "</label><br/>\n";
+                    }
+                });
+                // console.log( 'dep_inputs: ' + dep_inputs.length );
+                if ( dep_inputs.length ){
+                    $( '#ctc_dependencies' ).html( dep_inputs );
+                    $( '#ctc_dependencies_container' ).show();
+                } else {
+                    $( '#ctc_dependencies' ).empty();
+                    $( '#ctc_dependencies_container' ).hide();                    
                 }
 
                 if ( !$( '#ctc_child_type_reset' ).is( ':checked' ) ) {
@@ -2252,10 +2292,28 @@
             } );  
         },
         do_analysis: function() {
-            var self = this;
-            self.analysis = { parnt: {}, child: {} };
-            self.phperr = { parnt: [], child: [] };
-            self.done = 0;
+            var self            = this;
+            self.analysis    = {
+                parnt: {
+                    deps: [[],[]],
+                    signals: {
+                        failure: 0
+                    },
+                    queue: [],
+                    irreg: []
+                },
+                child: {
+                    deps: [[],[]],
+                    signals: {
+                        failure: 0
+                    },
+                    queue: [],
+                    irreg: []
+                }
+            };
+            self.phperr         = { parnt: [], child: [] };
+            self.dependencies   = {};
+            self.done           = 0;
             self.show_loading( false );
             self.analyze_theme( 'parnt' );
             if ( $.chldthmcfg.existing ) {
@@ -2297,6 +2355,7 @@
         analysis: {}, // analysis signals object
         done: 0, // analysis semphore
         resubmitting: 0, // resubmit semaphore
+        dependencies: {}, // addl stylesheets that may require dependencies
         is_success: function(){
             return $( '.ctc-success-response' ).length;
         }

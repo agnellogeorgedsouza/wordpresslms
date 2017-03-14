@@ -127,7 +127,7 @@ class N2SmartSliderSlidesAdmin extends N2SmartSliderSlides
 
                 for ($i = count($slides) - 1; $i >= 0; $i--) {
                     if ($slides[$i]->hasGenerator()) {
-                        array_splice($slides, $i, 1, $slides[$i]->expandSlide());
+                        array_splice($slides, $i, 1, $slides[$i]->expandSlideAdmin());
                     }
                 }
 

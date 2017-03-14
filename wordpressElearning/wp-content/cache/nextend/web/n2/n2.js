@@ -34,6 +34,15 @@ window.n2jQuery.ready(function () {
 
     var readyDeferred = window.n2.Deferred();
     window.nextend.deferreds.push(readyDeferred);
+
+    if (typeof window.n2CSS !== 'undefined') {
+        var d = n2.Deferred();
+        n2('<link rel="stylesheet" type="text/css" href="' + window.n2CSS + '" media="all"/>').load(function () {
+            d.resolve();
+        }).appendTo('head');
+        window.nextend.deferreds.push(d);
+    }
+
     window.n2(document).ready(function () {
         readyDeferred.resolve();
     });

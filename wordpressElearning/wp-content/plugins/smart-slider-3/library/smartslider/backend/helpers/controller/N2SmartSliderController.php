@@ -1,7 +1,6 @@
 <?php
 
-class N2SmartSliderController extends N2BackendController
-{
+class N2SmartSliderController extends N2BackendController {
 
     public function initialize() {
         parent::initialize();
@@ -12,7 +11,12 @@ class N2SmartSliderController extends N2BackendController
             'models.License',
             'models.Update'
         ), 'smartslider');
-        N2JS::addInline("new NextendSmartSliderCreateSlider('" . $this->appType->router->createUrl(array('slider/create')) . "');");
+    }
+
+    public function loadSliderManager() {
+
+
+        N2JS::addInline("new NextendSmartSliderManageSliders('" . N2Request::getInt('sliderid', 0) . "', '" . $this->appType->router->createUrl(array('slider/create')) . "');");
 
         N2Localization::addJS(array(
             'Create Slider',
@@ -28,7 +32,7 @@ class N2SmartSliderController extends N2BackendController
             'Block',
             'Thumbnail - horizontal',
             'Thumbnail - vertical',
-            'Caption',
+            'Bar',
             'Horizontal accordion',
             'Vertical accordion',
             'Showcase',
@@ -43,8 +47,7 @@ class N2SmartSliderController extends N2BackendController
 
 }
 
-class N2SmartSliderControllerAjax extends N2BackendControllerAjax
-{
+class N2SmartSliderControllerAjax extends N2BackendControllerAjax {
 
     public function initialize() {
         parent::initialize();

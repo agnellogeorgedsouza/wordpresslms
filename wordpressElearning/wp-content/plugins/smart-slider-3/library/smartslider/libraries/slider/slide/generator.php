@@ -52,6 +52,20 @@ class N2SmartSliderSlidesGenerator {
             $slides[] = $newSlide;
         }
         if (count($slides) == 0) {
+            $slides = null;
+        }
+        return $slides;
+    }
+
+    public function getSlidesAdmin() {
+        $slides = array();
+        $data   = $this->getData();
+        for ($i = 0; $i < count($data); $i++) {
+            $newSlide = clone $this->slide;
+            $newSlide->setVariables($data[$i]);
+            $slides[] = $newSlide;
+        }
+        if (count($slides) == 0) {
             $slides[] = $this->slide;
         }
         return $slides;

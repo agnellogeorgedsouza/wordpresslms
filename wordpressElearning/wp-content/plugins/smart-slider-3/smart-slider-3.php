@@ -3,7 +3,7 @@
 Plugin Name: Smart Slider 3
 Plugin URI: http://smartslider3.com/
 Description: The perfect all-in-one responsive slider solution for WordPress.
-Version: 3.0.37
+Version: 3.1.6
 Author: Nextend
 Author URI: http://nextendweb.com
 License: GPLv3 or later
@@ -26,7 +26,7 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-if (!class_exists('N2_SMARTSLIDER_3')) {
+if (!class_exists('SmartSlider3')) {
 
     define('N2PRO', 0);
     define('N2SSPRO', 0);

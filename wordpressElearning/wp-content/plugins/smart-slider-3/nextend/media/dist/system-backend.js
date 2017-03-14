@@ -111,15 +111,15 @@
 
     NextendVisualManagerCore.prototype._loadVisualFromServer = function (visualId) {
         return NextendAjaxHelper.ajax({
-                type: "POST",
-                url: NextendAjaxHelper.makeAjaxUrl(this.parameters.ajaxUrl, {
-                    nextendaction: 'loadVisual'
-                }),
-                data: {
-                    visualId: visualId
-                },
-                dataType: 'json'
-            })
+            type: "POST",
+            url: NextendAjaxHelper.makeAjaxUrl(this.parameters.ajaxUrl, {
+                nextendaction: 'loadVisual'
+            }),
+            data: {
+                visualId: visualId
+            },
+            dataType: 'json'
+        })
             .done($.proxy(function (response) {
                 n2c.error('@todo: load the visual data!');
             }, this));
@@ -195,6 +195,15 @@
         contentArea.height(h - 1 - contentArea.siblings('.n2-top-bar, .n2-table').outerHeight());
     };
 
+
+    NextendVisualManagerCore.prototype.getDataFromController = function (data, showParameters, cb) {
+        this.showParameters = $.extend({
+            previewMode: false,
+            previewHTML: false
+        }, showParameters);
+        return this.loadDataToController(data, cb);
+    }
+
     NextendVisualManagerCore.prototype.loadDataToController = function (data) {
         if (this.isVisualData(data)) {
             $.when(this.getVisual(data)).done($.proxy(function (visual) {
@@ -256,19 +265,19 @@
 
     NextendVisualManagerCore.prototype._saveAsNew = function (name) {
         return NextendAjaxHelper.ajax({
-                type: "POST",
-                url: NextendAjaxHelper.makeAjaxUrl(this.parameters.ajaxUrl, {
-                    nextendaction: 'addVisual'
-                }),
-                data: {
-                    setId: this.setsSelector.val(),
-                    value: Base64.encode(JSON.stringify({
-                        name: name,
-                        data: this.controller.get('saveAsNew')
-                    }))
-                },
-                dataType: 'json'
-            })
+            type: "POST",
+            url: NextendAjaxHelper.makeAjaxUrl(this.parameters.ajaxUrl, {
+                nextendaction: 'addVisual'
+            }),
+            data: {
+                setId: this.setsSelector.val(),
+                value: Base64.encode(JSON.stringify({
+                    name: name,
+                    data: this.controller.get('saveAsNew')
+                }))
+            },
+            dataType: 'json'
+        })
             .done($.proxy(function (response) {
                 var visual = response.data.visual;
                 this.changeActiveVisual(this.sets[visual.referencekey].addVisual(visual));
@@ -339,7 +348,6 @@
             this.newVisualSet(this.parameters.sets[i]);
         }
         this.initSetsManager();
-
         for (var k in visuals) {
             this.sets[k].loadVisuals(visuals[k])
         }
@@ -361,15 +369,15 @@
 
     NextendVisualManagerVisibleSets.prototype._loadVisualFromServer = function (visualId) {
         return NextendAjaxHelper.ajax({
-                type: "POST",
-                url: NextendAjaxHelper.makeAjaxUrl(this.parameters.ajaxUrl, {
-                    nextendaction: 'loadSetByVisualId'
-                }),
-                data: {
-                    visualId: visualId
-                },
-                dataType: 'json'
-            })
+            type: "POST",
+            url: NextendAjaxHelper.makeAjaxUrl(this.parameters.ajaxUrl, {
+                nextendaction: 'loadSetByVisualId'
+            }),
+            data: {
+                visualId: visualId
+            },
+            dataType: 'json'
+        })
             .done($.proxy(function (response) {
                 this.sets[response.data.set.setId].loadVisuals(response.data.set.visuals);
 
@@ -456,15 +464,20 @@
         }
     };
 
-    NextendVisualManagerSetsAndMore.prototype.loadDataToController = function (data) {
+    NextendVisualManagerSetsAndMore.prototype.loadDataToController = function (data, cb) {
         if (parseInt(data) > 0) {
             $.when(this.getVisual(data)).done($.proxy(function (visual) {
                 if (visual.id > 0) {
                     this.setMode('linked');
-                    visual.activate();
+
+                    visual.activate(false, cb);
                 } else {
                     this.setMode('static');
-                    this.controller.load('', false, this.showParameters);
+                    if (typeof cb == 'function') {
+                        this.controller.asyncVisualData('', this.showParameters, cb);
+                    } else {
+                        this.controller.load('', false, this.showParameters);
+                    }
                 }
             }, this));
         } else {
@@ -475,7 +488,11 @@
             } catch (e) {
                 // This visual is Empty!!!
             }
-            this.controller.load(visualData, false, this.showParameters);
+            if (typeof cb == 'function') {
+                this.controller.asyncVisualData(visualData, this.showParameters, cb);
+            } else {
+                this.controller.load(visualData, false, this.showParameters);
+            }
         }
     };
 
@@ -682,12 +699,16 @@
         return (this.visual.editable == 1);
     };
 
-    NextendVisualCore.prototype.activate = function (e) {
-        if (typeof e !== 'undefined') {
+    NextendVisualCore.prototype.activate = function (e, cb) {
+        if (e) {
             e.preventDefault();
         }
         this.visualManager.changeActiveVisual(this);
-        this.visualManager.controller.load(this.value, false, this.visualManager.showParameters);
+        if (typeof cb == 'function') {
+            this.visualManager.controller.asyncVisualData(this.value, this.visualManager.showParameters, cb);
+        } else {
+            this.visualManager.controller.load(this.value, false, this.visualManager.showParameters);
+        }
     };
 
     NextendVisualCore.prototype.active = function () {
@@ -707,15 +728,15 @@
     NextendVisualCore.prototype._delete = function () {
 
         return NextendAjaxHelper.ajax({
-                type: "POST",
-                url: NextendAjaxHelper.makeAjaxUrl(this.visualManager.parameters.ajaxUrl, {
-                    nextendaction: 'deleteVisual'
-                }),
-                data: {
-                    visualId: this.id
-                },
-                dataType: 'json'
-            })
+            type: "POST",
+            url: NextendAjaxHelper.makeAjaxUrl(this.visualManager.parameters.ajaxUrl, {
+                nextendaction: 'deleteVisual'
+            }),
+            data: {
+                visualId: this.id
+            },
+            dataType: 'json'
+        })
             .done($.proxy(function (response) {
                 var visual = response.data.visual;
 
@@ -776,7 +797,7 @@
                 .on('click', $.proxy(this.activate, this)));
         if (!this.isSystem()) {
             this.row.append($('<span class="n2-actions"></span>')
-                .append($('<a href="#"><i class="n2-i n2-i-delete n2-i-grey-opacity"></i></a>')
+                .append($('<div class="n2-button n2-button-icon n2-button-s" href="#"><i class="n2-i n2-i-delete n2-i-grey-opacity"></i></div>')
                     .on('click', $.proxy(this.delete, this))));
         }
         return this.row;
@@ -835,8 +856,8 @@
         }
     };
 
-    NextendVisualWithSetRowMultipleSelection.prototype.activate = function (e) {
-        if (typeof e !== 'undefined') {
+    NextendVisualWithSetRowMultipleSelection.prototype.activate = function (e, cb) {
+        if (e) {
             e.preventDefault();
         }
         this.visualManager.changeActiveVisual(this);
@@ -891,7 +912,7 @@
                     back: false,
                     close: true,
                     content: '',
-                    controls: ['<a href="#" class="n2-button n2-button-big n2-button-grey n2-uc n2-h4">' + n2_('Save as new') + '</a>', '<a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">' + n2_('Overwrite current') + '</a>'],
+                    controls: ['<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-grey n2-uc n2-h4">' + n2_('Save as new') + '</a>', '<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' + n2_('Overwrite current') + '</a>'],
                     fn: {
                         show: function () {
                             this.title.html(n2_printf(n2_('%s changed - %s'), context.visualManager.labels.visual, context.visualManager.activeVisual.name));
@@ -927,7 +948,7 @@
                     back: 'zero',
                     close: true,
                     content: '<form class="n2-form"></form>',
-                    controls: ['<a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">' + n2_('Save as new') + '</a>'],
+                    controls: ['<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' + n2_('Save as new') + '</a>'],
                     fn: {
                         show: function () {
 
@@ -977,7 +998,7 @@
                     back: false,
                     close: true,
                     content: '<form class="n2-form"></form>',
-                    controls: ['<a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">' + n2_('Save as new') + '</a>'],
+                    controls: ['<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' + n2_('Save as new') + '</a>'],
                     fn: {
                         show: function () {
 
@@ -1141,7 +1162,7 @@
                     back: false,
                     close: true,
                     content: '',
-                    controls: ['<a href="#" class="n2-add-new n2-button n2-button-big n2-button-green n2-uc n2-h4">' + n2_('Add new') + '</a>'],
+                    controls: ['<a href="#" class="n2-add-new n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' + n2_('Add new') + '</a>'],
                     fn: {
                         show: function () {
                             this.title.html(n2_printf(n2_('%s sets'), visualManager.labels.visual));
@@ -1151,10 +1172,10 @@
                             for (var k in visualManager.sets) {
                                 var id = visualManager.sets[k].set.id;
                                 if (setsManager.isSetAllowedToEdit(id)) {
-                                    data.push([visualManager.sets[k].set.value, $('<div class="n2-button n2-button-grey n2-button-x-small n2-uc n2-h5">' + n2_('Rename') + '</div>')
+                                    data.push([visualManager.sets[k].set.value, $('<div class="n2-button n2-button-normal n2-button-xs n2-radius-s n2-button-grey n2-uc n2-h5">' + n2_('Rename') + '</div>')
                                         .on('click', {id: id}, $.proxy(function (e) {
                                             this.loadPane('rename', false, false, [e.data.id]);
-                                        }, this)), $('<div class="n2-button n2-button-red n2-button-x-small n2-uc n2-h5">' + n2_('Delete') + '</div>')
+                                        }, this)), $('<div class="n2-button n2-button-normal n2-button-xs n2-radius-s n2-button-red n2-uc n2-h5">' + n2_('Delete') + '</div>')
                                         .on('click', {id: id}, $.proxy(function (e) {
                                             this.loadPane('delete', false, false, [e.data.id]);
                                         }, this))]);
@@ -1181,7 +1202,7 @@
                     back: 'zero',
                     close: true,
                     content: '<form class="n2-form"></form>',
-                    controls: ['<a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">' + n2_('Add') + '</a>'],
+                    controls: ['<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' + n2_('Add') + '</a>'],
                     fn: {
                         show: function () {
 
@@ -1217,7 +1238,7 @@
                     back: 'zero',
                     close: true,
                     content: '<form class="n2-form"></form>',
-                    controls: ['<a href="#" class="n2-button n2-button-big n2-button-green n2-uc n2-h4">' + n2_('Rename') + '</a>'],
+                    controls: ['<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-green n2-uc n2-h4">' + n2_('Rename') + '</a>'],
                     fn: {
                         show: function (id) {
 
@@ -1250,7 +1271,7 @@
                     back: 'zero',
                     close: true,
                     content: '',
-                    controls: ['<a href="#" class="n2-button n2-button-big n2-button-grey n2-uc n2-h4">' + n2_('Cancel') + '</a>', '<a href="#" class="n2-button n2-button-big n2-button-red n2-uc n2-h4">' + n2_('Yes') + '</a>'],
+                    controls: ['<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-grey n2-uc n2-h4">' + n2_('Cancel') + '</a>', '<a href="#" class="n2-button n2-button-normal n2-button-l n2-radius-s n2-button-red n2-uc n2-h4">' + n2_('Yes') + '</a>'],
                     fn: {
                         show: function (id) {
 
@@ -1410,10 +1431,12 @@
 
     NextendVisualEditorControllerBase.prototype.show = function () {
         this.visible = true;
+        nextend.context.addWindow("visual");
     };
 
     NextendVisualEditorControllerBase.prototype.close = function () {
         this.visible = false;
+        nextend.context.removeWindow();
     };
     scope.NextendVisualEditorControllerBase = NextendVisualEditorControllerBase;
 
@@ -1494,7 +1517,6 @@
     };
 
     NextendVisualEditorController.prototype._load = function (visual, tabs, parameters) {
-
         this.currentVisual = [];
         for (var i = 0; i < visual.length; i++) {
             this.currentVisual[i] = $.extend(true, this.getCleanVisual(), visual[i]);
@@ -1527,6 +1549,22 @@
 
         this.setTabs(tabs);
     };
+
+    NextendVisualEditorController.prototype.asyncVisualData = function (visual, showParameters, cb) {
+        if (visual == '') {
+            visual = this.getEmptyVisual();
+        }
+        var tabs = this.previewModesList[showParameters.previewMode].tabs,
+            currentVisual = [];
+        for (var i = 0; i < visual.length; i++) {
+            currentVisual[i] = $.extend(true, this.getCleanVisual(), visual[i]);
+        }
+        for (var i = currentVisual.length; i < tabs.length; i++) {
+            currentVisual[i] = this.getCleanVisual();
+        }
+
+        cb(currentVisual, tabs);
+    }
 
     NextendVisualEditorController.prototype.getCleanVisual = function () {
         return {};
@@ -3010,7 +3048,7 @@
         this.clear();
 
         if (this.uploadAllowed) {
-            this.node.append($('<div class="n2-browse-box n2-browse-upload"><div class="n2-h4">' + n2_('Drop files anywhere to upload or') + ' <a class="n2-button n2-button-medium n2-button-grey n2-uc n2-h4" href="#">' + n2_('Select files') + '</a></div><input id="n2-browse-upload" type="file" name="image" multiple></div>'));
+            this.node.append($('<div class="n2-browse-box n2-browse-upload"><div class="n2-h4">' + n2_('Drop files anywhere to upload or') + ' <a class="n2-button n2-button-normal n2-button-m n2-radius-s n2-button-grey n2-uc n2-h4" href="#">' + n2_('Select files') + '</a></div><input id="n2-browse-upload" type="file" name="image" multiple></div>'));
 
             this.node.find('#n2-browse-upload').fileupload({
                 url: NextendAjaxHelper.makeAjaxUrl(this.url, {
@@ -3023,7 +3061,7 @@
                 paramName: 'image',
                 add: $.proxy(function (e, data) {
 
-                    var box = $('<div class="n2-browse-box n2-browse-image"><div class="n2-button n2-button-small n2-button-blue"><i class="n2-i n2-it n2-i-tick"></i></div><div class="n2-browse-title">0%</div></div>');
+                    var box = $('<div class="n2-browse-box n2-browse-image"><div class="n2-button n2-button-icon n2-button-s n2-button-blue n2-radius-s"><i class="n2-i n2-it n2-i-tick"></i></div><div class="n2-browse-title">0%</div></div>');
 
                     var images = this.node.find('.n2-browse-image');
                     if (images.length > 0) {
@@ -3084,7 +3122,7 @@
         }
         for (var k in data.files) {
             if (data.files.hasOwnProperty(k)) {
-                var box = $('<div class="n2-browse-box n2-browse-image"><div class="n2-button n2-button-small n2-button-blue"><i class="n2-i n2-it n2-i-tick"></i></div><div class="n2-browse-title">' + k + '</div></div>')
+                var box = $('<div class="n2-browse-box n2-browse-image"><div class="n2-button n2-button-icon n2-button-s n2-button-blue n2-radius-s"><i class="n2-i n2-it n2-i-tick"></i></div><div class="n2-browse-title">' + k + '</div></div>')
                     .css('background-image', 'url(' + encodeURI(nextend.imageHelper.fixed(data.files[k])) + ')')
                     .on('click', $.proxy(this.clickImage, this, data.files[k]));
                 this.node.append(box);
@@ -3366,6 +3404,14 @@
         NextendVisualEditorController.prototype._load.call(this, visual, tabs, parameters);
     };
 
+    NextendFontEditorController.prototype.asyncVisualData = function (visual, showParameters, cb) {
+        if (visual.length) {
+            visual[0] = $.extend({}, this.getEmptyFont(), visual[0]);
+        }
+
+        NextendVisualEditorController.prototype.asyncVisualData.call(this, visual, showParameters, cb);
+    }
+
     NextendFontEditorController.prototype.getEmptyFont = function () {
         return {
             color: "000000ff",
@@ -3472,6 +3518,12 @@
                     'outsideChange.n2-editor': $.proxy(this.changeLineHeight, this)
                 }
             },
+            weight: {
+                element: $('#n2-font-editorweight'),
+                events: {
+                    'outsideChange.n2-editor': $.proxy(this.changeWeight, this)
+                }
+            },
             decoration: {
                 element: $('#n2-font-editordecoration'),
                 events: {
@@ -3527,13 +3579,13 @@
 
         this.fields.color.element.data('field').insideChange(values.color);
         this.fields.size.element.data('field').insideChange(values.size
-                .split('||')
-                .join('|*|')
+            .split('||')
+            .join('|*|')
         );
 
         this.fields.lineHeight.element.data('field').insideChange(values.lineheight);
+        this.fields.weight.element.data('field').insideChange(values.bold);
         this.fields.decoration.element.data('field').insideChange([
-            values.bold == 1 ? 'bold' : '',
             values.italic == 1 ? 'italic' : '',
             values.underline == 1 ? 'underline' : ''
         ].join('||'));
@@ -3564,14 +3616,12 @@
         this.trigger('lineheight', this.fields.lineHeight.element.val());
     };
 
+    NextendFontEditor.prototype.changeWeight = function () {
+        this.trigger('weight', this.fields.weight.element.val());
+    };
+
     NextendFontEditor.prototype.changeDecoration = function () {
         var value = this.fields.decoration.element.val();
-
-        var bold = 0;
-        if (value.indexOf('bold') != -1) {
-            bold = 1;
-        }
-        this.trigger('bold', bold);
 
         var italic = 0;
         if (value.indexOf('italic') != -1) {
@@ -3676,13 +3726,16 @@
         target.lineHeight = value;
     };
 
-    NextendFontRenderer.prototype.makeStylebold = function (value, target) {
-        if (value == 1) {
-            target.fontWeight = 'bold';
-        } else {
-            target.fontWeight = 'normal';
-        }
-    };
+    NextendFontRenderer.prototype.makeStyleweight =
+        NextendFontRenderer.prototype.makeStylebold = function (value, target) {
+            if (value == 1) {
+                target.fontWeight = 'bold';
+            } else if (value > 1) {
+                target.fontWeight = value;
+            } else {
+                target.fontWeight = 'normal';
+            }
+        };
 
     NextendFontRenderer.prototype.makeStyleitalic = function (value, target) {
         if (value == 1) {
@@ -4108,7 +4161,7 @@
     };
 
     NextendImageEditor.prototype.buttonGenerate = function () {
-        return '<a href="#" class="n2-button n2-button-medium n2-button-grey n2-h5 n2-uc">' + n2_('Generate') + '</a>';
+        return '<a href="#" class="n2-button n2-button-normal n2-button-m n2-radius-s n2-button-grey n2-h5 n2-uc">' + n2_('Generate') + '</a>';
     };
 
     NextendImageEditor.prototype.generateImage = function (device) {
@@ -4366,9 +4419,18 @@
         NextendVisualEditorController.prototype._load.call(this, visual, tabs, parameters);
     };
 
+    NextendStyleEditorController.prototype.asyncVisualData = function (visual, showParameters, cb) {
+        if (visual.length) {
+            visual[0] = $.extend({}, this.getEmptyStyle(), visual[0]);
+        }
+
+        NextendVisualEditorController.prototype.asyncVisualData.call(this, visual, showParameters, cb);
+    }
+
     NextendStyleEditorController.prototype.getEmptyStyle = function () {
         return {
             backgroundcolor: 'ffffff00',
+            opacity: 100,
             padding: '0|*|0|*|0|*|0|*|px',
             boxshadow: '0|*|0|*|0|*|0|*|000000ff',
             border: '0|*|solid|*|000000ff',
@@ -4448,6 +4510,12 @@
                     'nextendChange.n2-editor': $.proxy(this.changeBackgroundColor, this)
                 }
             },
+            opacity: {
+                element: $('#n2-style-editoropacity'),
+                events: {
+                    'outsideChange.n2-editor': $.proxy(this.changeOpacity, this)
+                }
+            },
             padding: {
                 element: $('#n2-style-editorpadding'),
                 events: {
@@ -4487,6 +4555,7 @@
     NextendStyleEditor.prototype.load = function (values) {
         this._off();
         this.fields.backgroundColor.element.data('field').insideChange(values.backgroundcolor);
+        this.fields.opacity.element.data('field').insideChange(values.opacity);
         this.fields.padding.element.data('field').insideChange(values.padding);
         this.fields.boxShadow.element.data('field').insideChange(values.boxshadow);
         this.fields.border.element.data('field').insideChange(values.border);
@@ -4498,6 +4567,10 @@
     NextendStyleEditor.prototype.changeBackgroundColor = function () {
         this.trigger('backgroundcolor', this.fields.backgroundColor.element.val());
 
+    };
+
+    NextendStyleEditor.prototype.changeOpacity = function () {
+        this.trigger('opacity', this.fields.opacity.element.val());
     };
 
     NextendStyleEditor.prototype.changePadding = function () {
@@ -4538,6 +4611,10 @@
 
     NextendStyleRenderer.prototype.makeStylebackgroundcolor = function (value, target) {
         target.background = '#' + value.substr(0, 6) + ";\n\tbackground: " + N2Color.hex2rgbaCSS(value);
+    };
+
+    NextendStyleRenderer.prototype.makeStyleopacity = function (value, target) {
+        target.opacity = parseInt(value) / 100;
     };
 
     NextendStyleRenderer.prototype.makeStylepadding = function (value, target) {

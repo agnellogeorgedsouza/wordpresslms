@@ -4,7 +4,7 @@
  * Plugin Name: Slider WD
  * Plugin URI: https://web-dorado.com/products/wordpress-slider-plugin.html
  * Description: This is a responsive plugin, which allows adding sliders to your posts/pages and to custom location. It uses large number of transition effects and supports various types of layers.
- * Version: 1.1.53
+ * Version: 1.1.55
  * Author: WebDorado
  * Author URI: https://web-dorado.com/
  * License: GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -14,7 +14,7 @@ define('WD_S_NAME', plugin_basename(dirname(__FILE__)));
 define('WD_S_DIR', WP_PLUGIN_DIR . "/" . WD_S_NAME);
 define('WD_S_URL', plugins_url(WD_S_NAME));
 
-define('WD_S_VERSION', '1.1.53');
+define('WD_S_VERSION', '1.1.55');
 
 function wds_use_home_url() {
   $home_url = str_replace("http://", "", home_url());

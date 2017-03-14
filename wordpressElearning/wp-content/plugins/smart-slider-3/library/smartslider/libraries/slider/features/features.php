@@ -7,6 +7,8 @@ class N2SmartSliderFeatures {
 
     private $slider;
 
+    public $allowBGImageAttachmentFixed = true;
+
     /**
      * @var N2SmartSliderFeatureFadeOnLoad
      */
@@ -56,7 +58,6 @@ class N2SmartSliderFeatures {
      */
     public $slideBackground;
 
-    public $slideBackgroundVideo;
 
     /**
      * @var N2SmartSliderFeaturePostBackgroundAnimation
@@ -109,6 +110,11 @@ class N2SmartSliderFeatures {
 
         $this->makeJavaScriptProperties($return);
 
+        if (count($this->slider->slides) > 1) {
+            $this->allowBGImageAttachmentFixed = false;
+        }
+        $return['allowBGImageAttachmentFixed'] = $this->allowBGImageAttachmentFixed;
+
         return $return;
     }
 
@@ -122,6 +128,7 @@ class N2SmartSliderFeatures {
         $this->maintainSession->makeJavaScriptProperties($properties);
         $this->autoplay->makeJavaScriptProperties($properties);
         $this->layerMode->makeJavaScriptProperties($properties);
+        $this->slideBackground->makeJavaScriptProperties($properties);
         $properties['initCallbacks'] = $this->initCallbacks;
     }
 
@@ -138,9 +145,7 @@ class N2SmartSliderFeatures {
      */
     public function makeBackground($slide) {
 
-        $background = $this->slideBackground->make($slide);
-
-        return $background;
+        return $this->slideBackground->make($slide);
     }
 
     protected function setDevices() {

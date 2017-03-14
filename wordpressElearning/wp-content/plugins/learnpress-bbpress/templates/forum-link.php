@@ -1,0 +1,1 @@
+<a class="learn-press-course-forum-link" href="<?php echo get_the_permalink(); ?>"><?php echo get_the_title(); ?></a>

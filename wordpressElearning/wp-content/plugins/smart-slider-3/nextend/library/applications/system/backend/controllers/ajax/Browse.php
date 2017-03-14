@@ -1,4 +1,5 @@
 <?php
+N2Loader::import('libraries.image.image');
 
 class N2SystemBackendBrowseControllerAjax extends N2BackendControllerAjax {
 
@@ -269,10 +270,12 @@ class N2BulletProof {
             "xmb",
             "ico"
         );
-
-        if (isset($listOfMimeTypes[exif_imagetype($imageName)])) {
-            return $listOfMimeTypes[exif_imagetype($imageName)];
+		
+		$imageType = N2Image::exif_imagetype($imageName);
+        if (isset($listOfMimeTypes[$imageType])) {
+            return $listOfMimeTypes[$imageType];
         }
+		return false;
     }
 
     /**
@@ -369,10 +372,6 @@ class N2BulletProof {
      * @throws N2ImageUploaderException
      */
     public function upload($fileToUpload, $isNameProvided = null) {
-
-        if (!function_exists('exif_imagetype')) {
-            throw new N2ImageUploaderException("Function 'exif_imagetype' Not found.");
-        }
 
         // Check if any errors are thrown by the FILES[] array
         if ($fileToUpload["error"]) {

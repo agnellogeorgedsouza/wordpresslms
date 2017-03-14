@@ -146,6 +146,10 @@ function wds_update($version) {
   if (version_compare($version, '1.1.52') == -1) { 
     $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `hide_on_mobile` int(4) NOT NULL DEFAULT 0");
   }
+  if (version_compare($version, '1.1.54') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` CHANGE `layer_effect_in` `layer_effect_in` varchar(32)");
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` CHANGE `layer_effect_out` `layer_effect_out` varchar(32)");
+  }
   return;
 }
 

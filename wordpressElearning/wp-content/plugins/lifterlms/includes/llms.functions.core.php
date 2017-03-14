@@ -1,615 +1,61 @@
 <?php
 /**
-* Core functions file
-*
-* Misc functions used by lifterLMS core.
+* Core LifterLMS functions file
 */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-//include other function files
-include( 'functions/llms.functions.certificate.php' );
-include( 'functions/llms.functions.course.php' );
-include( 'functions/llms.functions.notice.php' );
-include( 'functions/llms.functions.page.php' );
-include( 'functions/llms.functions.person.php' );
-include( 'functions/llms.functions.access.php' );
+//include all other function files
+require_once 'functions/llms.functions.access.php';
+require_once 'functions/llms.functions.certificate.php';
+require_once 'functions/llms.functions.course.php';
+require_once 'functions/llms.functions.currency.php';
+require_once 'functions/llms.functions.log.php';
+require_once 'functions/llms.functions.notice.php';
+require_once 'functions/llms.functions.page.php';
+require_once 'functions/llms.functions.person.php';
+require_once 'functions/llms.functions.template.php';
 
 /**
- * Get Coupon
- * @return object [coupon session object]
+ * Determine if Terms & Conditions agreement is required during registration
+ * according to global settings
+ * @return   boolean
+ * @since    3.0.0
+ * @version  3.3.1
  */
-function llms_get_coupon() {
-	  $coupon = LLMS()->session->get( 'llms_coupon', array() );
-	  return $coupon;
-}
+function llms_are_terms_and_conditions_required() {
 
+	$enabled = get_option( 'lifterlms_registration_require_agree_to_terms' );
+	$page_id = absint( get_option( 'lifterlms_terms_page_id', false ) );
 
-/**
- * Get Countries array for Select list
- * @return array [Countries list]
- */
-function get_lifterlms_countries() {
-	return array_unique(
-		apply_filters( 'lifterlms_countries',
-			array(
-			'US' => __( 'United States', 'lifterlms' ),
-			'AF' => __( 'Afghanistan', 'lifterlms' ),
-			'AL' => __( 'Albania', 'lifterlms' ),
-			'DZ' => __( 'Algeria', 'lifterlms' ),
-			'AS' => __( 'American Samoa', 'lifterlms' ),
-			'AD' => __( 'Andorra', 'lifterlms' ),
-			'AO' => __( 'Angola', 'lifterlms' ),
-			'AI' => __( 'Anguilla', 'lifterlms' ),
-			'AQ' => __( 'Antarctica', 'lifterlms' ),
-			'AG' => __( 'Antigua And Barbuda', 'lifterlms' ),
-			'AR' => __( 'Argentina', 'lifterlms' ),
-			'AM' => __( 'Armenia', 'lifterlms' ),
-			'AW' => __( 'Aruba', 'lifterlms' ),
-			'AU' => __( 'Australia', 'lifterlms' ),
-			'AT' => __( 'Austria', 'lifterlms' ),
-			'AZ' => __( 'Azerbaijan', 'lifterlms' ),
-			'BS' => __( 'Bahamas', 'lifterlms' ),
-			'BH' => __( 'Bahrain', 'lifterlms' ),
-			'BD' => __( 'Bangladesh', 'lifterlms' ),
-			'BB' => __( 'Barbados', 'lifterlms' ),
-			'BY' => __( 'Belarus', 'lifterlms' ),
-			'BE' => __( 'Belgium', 'lifterlms' ),
-			'BZ' => __( 'Belize', 'lifterlms' ),
-			'BJ' => __( 'Benin', 'lifterlms' ),
-			'BM' => __( 'Bermuda', 'lifterlms' ),
-			'BT' => __( 'Bhutan', 'lifterlms' ),
-			'BO' => __( 'Bolivia', 'lifterlms' ),
-			'BA' => __( 'Bosnia And Herzegowina', 'lifterlms' ),
-			'BW' => __( 'Botswana', 'lifterlms' ),
-			'BV' => __( 'Bouvet Island', 'lifterlms' ),
-			'BR' => __( 'Brazil', 'lifterlms' ),
-			'IO' => __( 'British Indian Ocean Territory', 'lifterlms' ),
-			'BN' => __( 'Brunei Darussalam', 'lifterlms' ),
-			'BG' => __( 'Bulgaria', 'lifterlms' ),
-			'BF' => __( 'Burkina Faso', 'lifterlms' ),
-			'BI' => __( 'Burundi', 'lifterlms' ),
-			'KH' => __( 'Cambodia', 'lifterlms' ),
-			'CM' => __( 'Cameroon', 'lifterlms' ),
-			'CA' => __( 'Canada', 'lifterlms' ),
-			'CV' => __( 'Cape Verde', 'lifterlms' ),
-			'KY' => __( 'Cayman Islands', 'lifterlms' ),
-			'CF' => __( 'Central African Republic', 'lifterlms' ),
-			'TD' => __( 'Chad', 'lifterlms' ),
-			'CL' => __( 'Chile', 'lifterlms' ),
-			'CN' => __( 'China', 'lifterlms' ),
-			'CX' => __( 'Christmas Island', 'lifterlms' ),
-			'CC' => __( 'Cocos (Keeling) Islands', 'lifterlms' ),
-			'CO' => __( 'Colombia', 'lifterlms' ),
-			'KM' => __( 'Comoros', 'lifterlms' ),
-			'CG' => __( 'Congo', 'lifterlms' ),
-			'CD' => __( 'Congo, The Democratic Republic Of The', 'lifterlms' ),
-			'CK' => __( 'Cook Islands', 'lifterlms' ),
-			'CR' => __( 'Costa Rica', 'lifterlms' ),
-			'CI' => __( 'Cote D\'Ivoire', 'lifterlms' ),
-			'HR' => __( 'Croatia', 'lifterlms' ),
-			'CU' => __( 'Cuba', 'lifterlms' ),
-			'CY' => __( 'Cyprus', 'lifterlms' ),
-			'CZ' => __( 'Czech Republic', 'lifterlms' ),
-			'DK' => __( 'Denmark', 'lifterlms' ),
-			'DJ' => __( 'Djibouti', 'lifterlms' ),
-			'DM' => __( 'Dominica', 'lifterlms' ),
-			'DO' => __( 'Dominican Republic', 'lifterlms' ),
-			'TP' => __( 'East Timor', 'lifterlms' ),
-			'EC' => __( 'Ecuador', 'lifterlms' ),
-			'EG' => __( 'Egypt', 'lifterlms' ),
-			'SV' => __( 'El Salvador', 'lifterlms' ),
-			'GQ' => __( 'Equatorial Guinea', 'lifterlms' ),
-			'ER' => __( 'Eritrea', 'lifterlms' ),
-			'EE' => __( 'Estonia', 'lifterlms' ),
-			'ET' => __( 'Ethiopia', 'lifterlms' ),
-			'FK' => __( 'Falkland Islands (Malvinas)', 'lifterlms' ),
-			'FO' => __( 'Faroe Islands', 'lifterlms' ),
-			'FJ' => __( 'Fiji', 'lifterlms' ),
-			'FI' => __( 'Finland', 'lifterlms' ),
-			'FR' => __( 'France', 'lifterlms' ),
-			'FX' => __( 'France, Metropolitan', 'lifterlms' ),
-			'GF' => __( 'French Guiana', 'lifterlms' ),
-			'PF' => __( 'French Polynesia', 'lifterlms' ),
-			'TF' => __( 'French Southern Territories', 'lifterlms' ),
-			'GA' => __( 'Gabon', 'lifterlms' ),
-			'GM' => __( 'Gambia', 'lifterlms' ),
-			'GE' => __( 'Georgia', 'lifterlms' ),
-			'DE' => __( 'Germany', 'lifterlms' ),
-			'GH' => __( 'Ghana', 'lifterlms' ),
-			'GI' => __( 'Gibraltar', 'lifterlms' ),
-			'GR' => __( 'Greece', 'lifterlms' ),
-			'GL' => __( 'Greenland', 'lifterlms' ),
-			'GD' => __( 'Grenada', 'lifterlms' ),
-			'GP' => __( 'Guadeloupe', 'lifterlms' ),
-			'GU' => __( 'Guam', 'lifterlms' ),
-			'GT' => __( 'Guatemala', 'lifterlms' ),
-			'GN' => __( 'Guinea', 'lifterlms' ),
-			'GW' => __( 'Guinea-Bissau', 'lifterlms' ),
-			'GY' => __( 'Guyana', 'lifterlms' ),
-			'HT' => __( 'Haiti', 'lifterlms' ),
-			'HM' => __( 'Heard And Mc Donald Islands', 'lifterlms' ),
-			'VA' => __( 'Holy See (Vatican City State)', 'lifterlms' ),
-			'HN' => __( 'Honduras', 'lifterlms' ),
-			'HK' => __( 'Hong Kong', 'lifterlms' ),
-			'HU' => __( 'Hungary', 'lifterlms' ),
-			'IS' => __( 'Iceland', 'lifterlms' ),
-			'IN' => __( 'India', 'lifterlms' ),
-			'ID' => __( 'Indonesia', 'lifterlms' ),
-			'IR' => __( 'Iran (Islamic Republic Of)', 'lifterlms' ),
-			'IQ' => __( 'Iraq', 'lifterlms' ),
-			'IE' => __( 'Ireland', 'lifterlms' ),
-			'IL' => __( 'Israel', 'lifterlms' ),
-			'IT' => __( 'Italy', 'lifterlms' ),
-			'JM' => __( 'Jamaica', 'lifterlms' ),
-			'JP' => __( 'Japan', 'lifterlms' ),
-			'JO' => __( 'Jordan', 'lifterlms' ),
-			'KZ' => __( 'Kazakhstan', 'lifterlms' ),
-			'KE' => __( 'Kenya', 'lifterlms' ),
-			'KI' => __( 'Kiribati', 'lifterlms' ),
-			'KP' => __( 'Korea, Democratic People\'s Republic Of', 'lifterlms' ),
-			'KR' => __( 'Korea, Republic Of', 'lifterlms' ),
-			'KW' => __( 'Kuwait', 'lifterlms' ),
-			'KG' => __( 'Kyrgyzstan', 'lifterlms' ),
-			'LA' => __( 'Lao People\'s Democratic Republic', 'lifterlms' ),
-			'LV' => __( 'Latvia', 'lifterlms' ),
-			'LB' => __( 'Lebanon', 'lifterlms' ),
-			'LS' => __( 'Lesotho', 'lifterlms' ),
-			'LR' => __( 'Liberia', 'lifterlms' ),
-			'LY' => __( 'Libyan Arab Jamahiriya', 'lifterlms' ),
-			'LI' => __( 'Liechtenstein', 'lifterlms' ),
-			'LT' => __( 'Lithuania', 'lifterlms' ),
-			'LU' => __( 'Luxembourg', 'lifterlms' ),
-			'MO' => __( 'Macau', 'lifterlms' ),
-			'MK' => __( 'Macedonia, Former Yugoslav Republic Of', 'lifterlms' ),
-			'MG' => __( 'Madagascar', 'lifterlms' ),
-			'MW' => __( 'Malawi', 'lifterlms' ),
-			'MY' => __( 'Malaysia', 'lifterlms' ),
-			'MV' => __( 'Maldives', 'lifterlms' ),
-			'ML' => __( 'Mali', 'lifterlms' ),
-			'MT' => __( 'Malta', 'lifterlms' ),
-			'MH' => __( 'Marshall Islands', 'lifterlms' ),
-			'MQ' => __( 'Martinique', 'lifterlms' ),
-			'MR' => __( 'Mauritania', 'lifterlms' ),
-			'MU' => __( 'Mauritius', 'lifterlms' ),
-			'YT' => __( 'Mayotte', 'lifterlms' ),
-			'MX' => __( 'Mexico', 'lifterlms' ),
-			'FM' => __( 'Micronesia, Federated States Of', 'lifterlms' ),
-			'MD' => __( 'Moldova, Republic Of', 'lifterlms' ),
-			'MC' => __( 'Monaco', 'lifterlms' ),
-			'MN' => __( 'Mongolia', 'lifterlms' ),
-			'MS' => __( 'Montserrat', 'lifterlms' ),
-			'MA' => __( 'Morocco', 'lifterlms' ),
-			'MZ' => __( 'Mozambique', 'lifterlms' ),
-			'MM' => __( 'Myanmar', 'lifterlms' ),
-			'NA' => __( 'Namibia', 'lifterlms' ),
-			'NR' => __( 'Nauru', 'lifterlms' ),
-			'NP' => __( 'Nepal', 'lifterlms' ),
-			'NL' => __( 'Netherlands', 'lifterlms' ),
-			'AN' => __( 'Netherlands Antilles', 'lifterlms' ),
-			'NC' => __( 'New Caledonia', 'lifterlms' ),
-			'NZ' => __( 'New Zealand', 'lifterlms' ),
-			'NI' => __( 'Nicaragua', 'lifterlms' ),
-			'NE' => __( 'Niger', 'lifterlms' ),
-			'NG' => __( 'Nigeria', 'lifterlms' ),
-			'NU' => __( 'Niue', 'lifterlms' ),
-			'NF' => __( 'Norfolk Island', 'lifterlms' ),
-			'MP' => __( 'Northern Mariana Islands', 'lifterlms' ),
-			'NO' => __( 'Norway', 'lifterlms' ),
-			'OM' => __( 'Oman', 'lifterlms' ),
-			'PK' => __( 'Pakistan', 'lifterlms' ),
-			'PW' => __( 'Palau', 'lifterlms' ),
-			'PA' => __( 'Panama', 'lifterlms' ),
-			'PG' => __( 'Papua New Guinea', 'lifterlms' ),
-			'PY' => __( 'Paraguay', 'lifterlms' ),
-			'PE' => __( 'Peru', 'lifterlms' ),
-			'PH' => __( 'Philippines', 'lifterlms' ),
-			'PN' => __( 'Pitcairn', 'lifterlms' ),
-			'PL' => __( 'Poland', 'lifterlms' ),
-			'PT' => __( 'Portugal', 'lifterlms' ),
-			'PR' => __( 'Puerto Rico', 'lifterlms' ),
-			'QA' => __( 'Qatar', 'lifterlms' ),
-			'RE' => __( 'Reunion', 'lifterlms' ),
-			'RO' => __( 'Romania', 'lifterlms' ),
-			'RU' => __( 'Russian Federation', 'lifterlms' ),
-			'RW' => __( 'Rwanda', 'lifterlms' ),
-			'KN' => __( 'Saint Kitts And Nevis', 'lifterlms' ),
-			'LC' => __( 'Saint Lucia', 'lifterlms' ),
-			'VC' => __( 'Saint Vincent And The Grenadines', 'lifterlms' ),
-			'WS' => __( 'Samoa', 'lifterlms' ),
-			'SM' => __( 'San Marino', 'lifterlms' ),
-			'ST' => __( 'Sao Tome And Principe', 'lifterlms' ),
-			'SA' => __( 'Saudi Arabia', 'lifterlms' ),
-			'SN' => __( 'Senegal', 'lifterlms' ),
-			'SC' => __( 'Seychelles', 'lifterlms' ),
-			'SL' => __( 'Sierra Leone', 'lifterlms' ),
-			'SG' => __( 'Singapore', 'lifterlms' ),
-			'SK' => __( 'Slovakia (Slovak Republic)', 'lifterlms' ),
-			'SI' => __( 'Slovenia', 'lifterlms' ),
-			'SB' => __( 'Solomon Islands', 'lifterlms' ),
-			'SO' => __( 'Somalia', 'lifterlms' ),
-			'ZA' => __( 'South Africa', 'lifterlms' ),
-			'GS' => __( 'South Georgia, South Sandwich Islands', 'lifterlms' ),
-			'ES' => __( 'Spain', 'lifterlms' ),
-			'LK' => __( 'Sri Lanka', 'lifterlms' ),
-			'SH' => __( 'St. Helena', 'lifterlms' ),
-			'PM' => __( 'St. Pierre And Miquelon', 'lifterlms' ),
-			'SD' => __( 'Sudan', 'lifterlms' ),
-			'SR' => __( 'Suriname', 'lifterlms' ),
-			'SJ' => __( 'Svalbard And Jan Mayen Islands', 'lifterlms' ),
-			'SZ' => __( 'Swaziland', 'lifterlms' ),
-			'SE' => __( 'Sweden', 'lifterlms' ),
-			'CH' => __( 'Switzerland', 'lifterlms' ),
-			'SY' => __( 'Syrian Arab Republic', 'lifterlms' ),
-			'TW' => __( 'Taiwan', 'lifterlms' ),
-			'TJ' => __( 'Tajikistan', 'lifterlms' ),
-			'TZ' => __( 'Tanzania, United Republic Of', 'lifterlms' ),
-			'TH' => __( 'Thailand', 'lifterlms' ),
-			'TG' => __( 'Togo', 'lifterlms' ),
-			'TK' => __( 'Tokelau', 'lifterlms' ),
-			'TO' => __( 'Tonga', 'lifterlms' ),
-			'TT' => __( 'Trinidad And Tobago', 'lifterlms' ),
-			'TN' => __( 'Tunisia', 'lifterlms' ),
-			'TR' => __( 'Turkey', 'lifterlms' ),
-			'TM' => __( 'Turkmenistan', 'lifterlms' ),
-			'TC' => __( 'Turks And Caicos Islands', 'lifterlms' ),
-			'TV' => __( 'Tuvalu', 'lifterlms' ),
-			'UG' => __( 'Uganda', 'lifterlms' ),
-			'UA' => __( 'Ukraine', 'lifterlms' ),
-			'AE' => __( 'United Arab Emirates', 'lifterlms' ),
-			'GB' => __( 'United Kingdom', 'lifterlms' ),
-			'UM' => __( 'United States Minor Outlying Islands', 'lifterlms' ),
-			'UY' => __( 'Uruguay', 'lifterlms' ),
-			'UZ' => __( 'Uzbekistan', 'lifterlms' ),
-			'VU' => __( 'Vanuatu', 'lifterlms' ),
-			'VE' => __( 'Venezuela', 'lifterlms' ),
-			'VN' => __( 'Viet Nam', 'lifterlms' ),
-			'VG' => __( 'Virgin Islands (British)', 'lifterlms' ),
-			'VI' => __( 'Virgin Islands (U.S.)', 'lifterlms' ),
-			'WF' => __( 'Wallis And Futuna Islands', 'lifterlms' ),
-			'EH' => __( 'Western Sahara', 'lifterlms' ),
-			'YE' => __( 'Yemen', 'lifterlms' ),
-			'YU' => __( 'Yugoslavia', 'lifterlms' ),
-			'ZM' => __( 'Zambia', 'lifterlms' ),
-			'ZW' => __( 'Zimbabwe', 'lifterlms' ),
-				)
-		)
-	);
+	return ( 'yes' === $enabled && $page_id );
+
 }
 
 /**
- * Get Currency Selection
- * @return string [Currency Id]
- */
-function get_lifterlms_currency() {
-	  return apply_filters( 'lifterlms_currency', get_option( 'lifterlms_currency' ) );
-}
-
-/**
- * Get Currency array for select list
- * @return array [Currecies]
- */
-function get_lifterlms_currencies() {
-	  return array_unique(
-		  apply_filters( 'lifterlms_currencies',
-			  array(
-						'AED' => __( 'United Arab Emirates Dirham', 'lifterlms' ),
-						'AUD' => __( 'Australian Dollars', 'lifterlms' ),
-						'BDT' => __( 'Bangladeshi Taka', 'lifterlms' ),
-						'BRL' => __( 'Brazilian Real', 'lifterlms' ),
-						'BGN' => __( 'Bulgarian Lev', 'lifterlms' ),
-						'CAD' => __( 'Canadian Dollars', 'lifterlms' ),
-						'CLP' => __( 'Chilean Peso', 'lifterlms' ),
-						'CNY' => __( 'Chinese Yuan', 'lifterlms' ),
-						'CZK' => __( 'Czech Koruna', 'lifterlms' ),
-						'DKK' => __( 'Danish Krone', 'lifterlms' ),
-						'EUR' => __( 'Euros', 'lifterlms' ),
-						'HKD' => __( 'Hong Kong Dollar', 'lifterlms' ),
-						'HRK' => __( 'Croatia kuna', 'lifterlms' ),
-						'HUF' => __( 'Hungarian Forint', 'lifterlms' ),
-						'ISK' => __( 'Icelandic krona', 'lifterlms' ),
-						'IDR' => __( 'Indonesia Rupiah', 'lifterlms' ),
-						'INR' => __( 'Indian Rupee', 'lifterlms' ),
-						'ILS' => __( 'Israeli Shekel', 'lifterlms' ),
-						'JPY' => __( 'Japanese Yen', 'lifterlms' ),
-						'KRW' => __( 'South Korean Won', 'lifterlms' ),
-						'MYR' => __( 'Malaysian Ringgits', 'lifterlms' ),
-						'MXN' => __( 'Mexican Peso', 'lifterlms' ),
-						'NGN' => __( 'Nigerian Naira', 'lifterlms' ),
-						'NOK' => __( 'Norwegian Krone', 'lifterlms' ),
-						'NZD' => __( 'New Zealand Dollar', 'lifterlms' ),
-						'PHP' => __( 'Philippine Pesos', 'lifterlms' ),
-						'PLN' => __( 'Polish Zloty', 'lifterlms' ),
-						'GBP' => __( 'Pounds Sterling', 'lifterlms' ),
-						'RON' => __( 'Romanian Leu', 'lifterlms' ),
-						'RUB' => __( 'Russian Ruble', 'lifterlms' ),
-						'SGD' => __( 'Singapore Dollar', 'lifterlms' ),
-						'ZAR' => __( 'South African rand', 'lifterlms' ),
-						'SEK' => __( 'Swedish Krona', 'lifterlms' ),
-						'CHF' => __( 'Swiss Franc', 'lifterlms' ),
-						'TWD' => __( 'Taiwan New Dollars', 'lifterlms' ),
-						'THB' => __( 'Thai Baht', 'lifterlms' ),
-						'TRY' => __( 'Turkish Lira', 'lifterlms' ),
-						'USD' => __( 'US Dollars', 'lifterlms' ),
-						'VND' => __( 'Vietnamese Dong', 'lifterlms' ),
-				  )
-		  )
-	  );
-}
-
-/**
- * Get Currency Symbol text code
- * @param  string $currency [Currency Id]
- * @return string [Currency Code]
- */
-function get_lifterlms_currency_symbol( $currency = '' ) {
-	if ( ! $currency ) {
-		  $currency = get_lifterlms_currency();
-	}
-
-	switch ( $currency ) {
-		case 'AED' :
-			  $currency_symbol = 'د.إ';
-				break;
-		case 'BDT':
-			  $currency_symbol = '&#2547;&nbsp;';
-				break;
-		case 'BRL' :
-			  $currency_symbol = '&#82;&#36;';
-				break;
-		case 'BGN' :
-			  $currency_symbol = '&#1083;&#1074;.';
-				break;
-		case 'AUD' :
-		case 'CAD' :
-		case 'CLP' :
-		case 'MXN' :
-		case 'NZD' :
-		case 'HKD' :
-		case 'SGD' :
-		case 'USD' :
-			  $currency_symbol = '&#36;';
-				break;
-		case 'EUR' :
-			  $currency_symbol = '&euro;';
-				break;
-		case 'CNY' :
-		case 'RMB' :
-		case 'JPY' :
-			  $currency_symbol = '&yen;';
-				break;
-		case 'RUB' :
-			  $currency_symbol = '&#1088;&#1091;&#1073;.';
-				break;
-		case 'KRW' : $currency_symbol = '&#8361;'; break;
-		case 'TRY' : $currency_symbol = '&#84;&#76;'; break;
-		case 'NOK' : $currency_symbol = '&#107;&#114;'; break;
-		case 'ZAR' : $currency_symbol = '&#82;'; break;
-		case 'CZK' : $currency_symbol = '&#75;&#269;'; break;
-		case 'MYR' : $currency_symbol = '&#82;&#77;'; break;
-		case 'DKK' : $currency_symbol = 'kr.'; break;
-		case 'HUF' : $currency_symbol = '&#70;&#116;'; break;
-		case 'IDR' : $currency_symbol = 'Rp'; break;
-		case 'INR' : $currency_symbol = 'Rs.'; break;
-		case 'ISK' : $currency_symbol = 'Kr.'; break;
-		case 'ILS' : $currency_symbol = '&#8362;'; break;
-		case 'PHP' : $currency_symbol = '&#8369;'; break;
-		case 'PLN' : $currency_symbol = '&#122;&#322;'; break;
-		case 'SEK' : $currency_symbol = '&#107;&#114;'; break;
-		case 'CHF' : $currency_symbol = '&#67;&#72;&#70;'; break;
-		case 'TWD' : $currency_symbol = '&#78;&#84;&#36;'; break;
-		case 'THB' : $currency_symbol = '&#3647;'; break;
-		case 'GBP' : $currency_symbol = '&pound;'; break;
-		case 'RON' : $currency_symbol = 'lei'; break;
-		case 'VND' : $currency_symbol = '&#8363;'; break;
-		case 'NGN' : $currency_symbol = '&#8358;'; break;
-		case 'HRK' : $currency_symbol = 'Kn'; break;
-		default    : $currency_symbol = ''; break;
-	}
-
-	  return apply_filters( 'lifterlms_currency_symbol', $currency_symbol, $currency );
-}
-
-
-/**
- * Format Number as decimal
+ * Retrieve the current time based on specified type.
  *
- * @param  int  $number     [price value]
- * @param  boolean $dp         [decimal points]
- * @param  boolean $trim_zeros [trim zeros?]
+ * This is a wrapper for the WP Core current_time which can be plugged
+ * We plug this during unit testing to allow mocking the current time
  *
- * @return string [formatted number]
+ * The 'mysql' type will return the time in the format for MySQL DATETIME field.
+ * The 'timestamp' type will return the current timestamp.
+ * Other strings will be interpreted as PHP date formats (e.g. 'Y-m-d').
+ *
+ * If $gmt is set to either '1' or 'true', then both types will use GMT time.
+ * if $gmt is false, the output is adjusted with the GMT offset in the WordPress option.
+ *
+ * @param  string       $type   Type of time to retrieve. Accepts 'mysql', 'timestamp', or PHP date format string (e.g. 'Y-m-d').
+ * @param  int|bool     $gmt    Optional. Whether to use GMT timezone. Default false.
+ * @return int|string           Integer if $type is 'timestamp', string otherwise.
+ *
+ * @since    3.4.0
+ * @version  3.4.0
  */
-function llms_format_decimal( $number, $dp = false, $trim_zeros = false ) {
-	  // Remove locale from string
-	if ( ! is_float( $number ) ) {
-		  $locale   = localeconv();
-		  $decimals = array( get_option( 'lifterlms_price_decimal_sep' ), $locale['decimal_point'], $locale['mon_decimal_point'] );
-		  $number   = llms_clean( str_replace( $decimals, '.', $number ) );
+if ( ! function_exists( 'llms_current_time' ) ) {
+	function llms_current_time( $type, $gmt = 0 ) {
+		return current_time( $type, $gmt );
 	}
-
-	  // DP is false - don't use number format, just return a string in our format
-	if ( $dp !== false ) {
-		  $dp = 2;     //= intval( $dp == "" ? get_option( 'lifterlms_price_num_decimals' ) : $dp );
-		  $number = number_format( floatval( $number ), $dp, '.', ',' );
-	}
-
-	if ( $trim_zeros && strstr( $number, '.' ) ) {
-		  $number = rtrim( rtrim( $number, '0' ), '.' );
-	}
-
-	  return $number;
-}
-
-/**
- * Sanitize text field
- * @param  string $var [raw text field input]
- * @return string [clean string]
- */
-function llms_clean( $var ) {
-	  return sanitize_text_field( $var );
-}
-
-/**
- * Get template part
- * @param  string $slug [url slug of template]
- * @param  string $name [name of template]
- *
- * @return string [name of file]
- */
-function llms_get_template_part( $slug, $name = '' ) {
-	  $template = '';
-
-	if ( $name ) {
-		  $template = locate_template( array( "{$slug}-{$name}.php", LLMS()->template_path() . "{$slug}-{$name}.php" ) );
-	}
-
-	  // Get default slug-name.php
-	if ( ! $template && $name && file_exists( LLMS()->plugin_path() . "/templates/{$slug}-{$name}.php" ) ) {
-		  $template = LLMS()->plugin_path() . "/templates/{$slug}-{$name}.php";
-	}
-
-	if ( ! $template ) {
-		  $template = locate_template( array( "{$slug}.php", LLMS()->template_path() . "{$slug}.php" ) );
-	}
-
-	  // Allow 3rd party plugin filter template file from their plugin
-	  $template = apply_filters( 'llms_get_template_part', $template, $slug, $name );
-
-	if ( $template ) {
-		  load_template( $template, false );
-	}
-}
-
-/**
- * Get Template part contents
- *
- * @param  string $slug [url slug]
- * @param  string $name [name of template]
- *
- * @return string [naem of file]
- */
-function llms_get_template_part_contents( $slug, $name = '' ) {
-	  $template = '';
-
-	if ( $name ) {
-		  $template = locate_template( array( "{$slug}-{$name}.php", LLMS()->template_path() . "{$slug}-{$name}.php" ) );
-	}
-
-	  // Get default slug-name.php
-	if ( ! $template && $name && file_exists( LLMS()->plugin_path() . "/templates/{$slug}-{$name}.php" ) ) {
-		  $template = LLMS()->plugin_path() . "/templates/{$slug}-{$name}.php";
-	}
-
-	if ( ! $template ) {
-		  $template = locate_template( array( "{$slug}.php", LLMS()->template_path() . "{$slug}.php" ) );
-	}
-
-	  // Allow 3rd party plugin filter template file from their plugin
-	if ( $template ) {
-		  return $template;
-		  //load_template( $template, false );
-	}
-}
-
-/**
- * Get Template Part
- *
- * @param  string] $template_name [name of template]
- * @param  array  $args          [array of pst args]
- * @param  string $template_path [file path to template]
- * @param  string $default_path  [default file path]
- *
- * @return void
- */
-function llms_get_template( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
-	if ( $args && is_array( $args ) ) {
-		  extract( $args );
-	}
-
-	  $located = llms_locate_template( $template_name, $template_path, $default_path );
-
-	  do_action( 'lifterlms_before_template_part', $template_name, $template_path, $located, $args );
-
-	  include( $located );
-
-	  do_action( 'lifterlms_after_template_part', $template_name, $template_path, $located, $args );
-}
-
-function llms_get_template_ajax( $template_name, $args = array(), $template_path = '', $default_path = '' ) {
-	if ( $args && is_array( $args ) ) {
-		  extract( $args );
-	}
-
-	  $located = llms_locate_template( $template_name, $template_path, $default_path );
-
-	  //do_action( 'lifterlms_before_template_part', $template_name, $template_path, $located, $args );
-
-	  include( $located );
-	  $myvar = ob_get_contents();
-			ob_end_clean();
-			return $myvar;
-
-	 // do_action( 'lifterlms_after_template_part', $template_name, $template_path, $located, $args );
-}
-
-/**
- * Locate Template
- *
- * @param  string $template_name [name of template]
- * @param  string $template_path [dir path to template]
- * @param  string $default_path  [default path]
- *
- * @return mixed $template, $template_name, $template_path
- */
-function llms_locate_template( $template_name, $template_path = '', $default_path = '' ) {
-	if ( ! $template_path ) {
-		  $template_path = LLMS()->template_path();
-	}
-
-	if ( ! $default_path ) {
-		  $default_path = LLMS()->plugin_path() . '/templates/';
-	}
-
-	  // check theme and template directories for the template
-	  $override_path = llms_get_template_override( $template_name );
-
-	  // Get default template
-	  $path = ($override_path) ? $override_path : $default_path;
-
-	  $template = $path . $template_name;
-
-	  // Return template
-	  return apply_filters( 'lifterlms_locate_template', $template, $template_name, $template_path );
-}
-
-/**
- * Get Template Override
- *
- * @param  string $template [template file]
- * @return mixed [template file or false if none exists.]
- */
-function llms_get_template_override( $template = '' ) {
-
-	  /**
-	   * Allow themes and plugins to determine which folders to look in for theme overrides
-	   */
-	  $dirs = apply_filters( 'lifterlms_theme_override_directories', array(
-			get_stylesheet_directory() . '/lifterlms',
-			get_template_directory() . '/lifterlms',
-	  ) );
-
-	  foreach ( $dirs as $dir ) {
-
-			$path = $dir . '/';
-
-		  if ( file_exists( $path . $template ) ) {
-				return $path;
-			}
-
-		}
-
-		return false;
 }
 
 /**
@@ -617,10 +63,12 @@ function llms_get_template_override( $template = '' ) {
  *
  * Very similar to https://developer.wordpress.org/reference/functions/_deprecated_function/
  *
- * @param  string $function    name of the deprecated class or function
- * @param  string $version     version deprecation ocurred
- * @param  string $replacement function to use in it's place (optional)
- * @return void
+ * @param   string $function    name of the deprecated class or function
+ * @param   string $version     version deprecation ocurred
+ * @param   string $replacement function to use in it's place (optional)
+ * @return  void
+ * @since   2.6.0
+ * @version 2.6.0
  */
 function llms_deprecated_function( $function, $version, $replacement = null ) {
 
@@ -664,93 +112,722 @@ function llms_deprecated_function( $function, $version, $replacement = null ) {
 }
 
 /**
- * LLMS debug function
- *
- * @param  mixed $message [array or object]
- * @return logs message to wp log file
+ * Get themes natively supported by LifterLMS
+ * @return array
+ * @since 3.0.0
+ * @version 3.0.1
  */
-function llms_log( $message ) {
-
-	if ( WP_DEBUG === true ) {
-
-		if ( is_array( $message ) || is_object( $message ) ) {
-
-			error_log( print_r( $message, true ) );
-
-		} else {
-
-			error_log( $message );
-		}
-	}
+function llms_get_core_supported_themes() {
+	return array(
+		'canvas',
+		'Divi',
+		'genesis',
+		'twentyseventeen',
+		'twentysixteen',
+		'twentyfifteen',
+		'twentyfourteen',
+		'twentythirteen',
+		'twentyeleven',
+		'twentytwelve',
+		'twentyten',
+	);
 }
 
 /**
- * Add product-id to WP query variables
- * DEPRECIATED: REMOVE THIS FUNCTION
+ * Get human readable time difference between 2 dates
  *
- * @param array $vars [WP query variables]
+ * Return difference between 2 dates in year, month, hour, minute or second
+ * The $precision caps the number of time units used: for instance if
+ * $time1 - $time2 = 3 days, 4 hours, 12 minutes, 5 seconds
+ * - with precision = 1 : 3 days
+ * - with precision = 2 : 3 days, 4 hours
+ * - with precision = 3 : 3 days, 4 hours, 12 minutes
  *
- * @return array $vars [WP query variables]
+ *
+ * @param mixed $time1 a time (string or timestamp)
+ * @param mixed $time2 a time (string or timestamp)
+ * @param integer $precision Optional precision
+ * @return string time difference
+ * @source http://www.if-not-true-then-false.com/2010/php-calculate-real-differences-between-two-dates-or-timestamps/
+ *
+ * @since    ??
+ * @version  ??
  */
-// function add_query_var_course_id( $vars ){
-//   $vars[] = "product-id";
-//   return $vars;
-// }
-// add_filter( 'query_vars', 'add_query_var_course_id' );
+function llms_get_date_diff( $time1, $time2, $precision = 2 ) {
+	// If not numeric then convert timestamps
+	if ( ! is_int( $time1 ) ) {
+		$time1 = strtotime( $time1 );
+	}
+	if ( ! is_int( $time2 ) ) {
+		$time2 = strtotime( $time2 );
+	}
+	// If time1 > time2 then swap the 2 values
+	if ( $time1 > $time2 ) {
+		list( $time1, $time2 ) = array( $time2, $time1 );
+	}
+	// Set up intervals and diffs arrays
+	$intervals = array( 'year', 'month', 'day', 'hour', 'minute', 'second' );
+	$l18n_singular = array(
+		'year' => __( 'year', 'lifterlms' ),
+		'month' => __( 'month', 'lifterlms' ),
+		'day' => __( 'day', 'lifterlms' ),
+		'hour' => __( 'hour', 'lifterlms' ),
+		'minute' => __( 'minute', 'lifterlms' ),
+		'second' => __( 'second', 'lifterlms' ),
+	);
+	$l18n_plural = array(
+		'year' => __( 'years', 'lifterlms' ),
+		'month' => __( 'months', 'lifterlms' ),
+		'day' => __( 'days', 'lifterlms' ),
+		'hour' => __( 'hours', 'lifterlms' ),
+		'minute' => __( 'minutes', 'lifterlms' ),
+		'second' => __( 'seconds', 'lifterlms' ),
+	);
+	$diffs = array();
+	foreach ( $intervals as $interval ) {
+		// Create temp time from time1 and interval
+		$ttime = strtotime( '+1 ' . $interval, $time1 );
+		// Set initial values
+		$add = 1;
+		$looped = 0;
+		// Loop until temp time is smaller than time2
+		while ( $time2 >= $ttime ) {
+			// Create new temp time from time1 and interval
+			$add++;
+			$ttime = strtotime( '+' . $add . ' ' . $interval, $time1 );
+			$looped++;
+		}
+		$time1 = strtotime( '+' . $looped . ' ' . $interval, $time1 );
+		$diffs[ $interval ] = $looped;
+	}
+	$count = 0;
+	$times = array();
+	foreach ( $diffs as $interval => $value ) {
+		// Break if we have needed precission
+		if ( $count >= $precision ) {
+			break;
+		}
+		// Add value and interval if value is bigger than 0
+		if ( $value > 0 ) {
+			if ( $value != 1 ) {
+				$text = $l18n_plural[ $interval ];
+			} else {
+				$text = $l18n_singular[ $interval ];
+			}
+			// Add value and interval to times array
+			$times[] = $value . ' ' . $text;
+			$count++;
+		}
+	}
+	// Return string with times
+	return implode( ', ', $times );
+}
+
+/**
+ * Get a list of registered engagement triggers
+ * @return   array
+ * @since    3.1.0
+ * @version  3.3.1
+ */
+function llms_get_engagement_triggers() {
+	return apply_filters( 'lifterlms_engagement_triggers', array(
+		'user_registration' => __( 'Student creates a new account', 'lifterlms' ),
+		'course_enrollment' => __( 'Student enrolls in a course', 'lifterlms' ),
+		'course_purchased' => __( 'Student purchases a course', 'lifterlms' ),
+		'course_completed' => __( 'Student completes a course', 'lifterlms' ),
+		// 'days_since_login' => __( 'Days since user last logged in', 'lifterlms' ), // @todo
+		'lesson_completed' => __( 'Student completes a lesson', 'lifterlms' ),
+		'quiz_completed' => __( 'Student completes a quiz', 'lifterlms' ),
+		'quiz_passed' => __( 'Student passes a quiz', 'lifterlms' ),
+		'quiz_failed' => __( 'Student fails a quiz', 'lifterlms' ),
+		'section_completed' => __( 'Student completes a section', 'lifterlms' ),
+		'course_track_completed' => __( 'Student comepletes a course track', 'lifterlms' ),
+		'membership_enrollment' => __( 'Student enrolls in a membership', 'lifterlms' ),
+		'membership_purchased' => __( 'Student purchases a membership', 'lifterlms' ),
+	) );
+}
+
+/**
+ * Get a list of registered engagement types
+ * @return   array
+ * @since    3.1.0
+ * @version  3.1.0
+ */
+function llms_get_engagement_types() {
+	return apply_filters( 'lifterlms_engagement_types', array(
+		'achievement' => __( 'Award an Achievement', 'lifterlms' ),
+		'certificate' => __( 'Award a Certificate', 'lifterlms' ),
+		'email' => __( 'Send an Email' ),
+	) );
+}
+
+/**
+* Get an array of student IDs based on enrollment status a course or memebership
+* @param    int           $post_id   WP_Post id of a course or memberhip
+* @param    string|array  $statuses  list of enrollment statuses to query by
+*                                    status query is an OR relationship
+* @param    integer    $limit        number of results
+* @param    integer    $skip         number of results to skip (for pagination)
+* @return   array
+* @since    3.0.0
+* @version  3.4.0
+*/
+function llms_get_enrolled_students( $post_id, $statuses = 'enrolled', $limit = 50, $skip = 0 ) {
+
+	// ensure we have an array if only one status is being queried
+	if ( ! is_array( $statuses ) ) {
+		$statuses = array( $statuses );
+	}
+
+	// drop invalid statuses
+	foreach ( $statuses as $key => $status ) {
+		if ( ! in_array( $status, array_keys( llms_get_enrollment_statuses() ) ) ) {
+			unset( $statuses[ $key ] );
+		}
+	}
+
+	$query = new LLMS_Student_Query( array(
+		'post_id' => $post_id,
+		'statuses' => $statuses,
+		'page' => ( 0 === $skip ) ? 1 : ( $skip / $limit ) + 1,
+		'per_page' => $limit,
+		'sort' => array(
+			'id' => 'ASC',
+		),
+	) );
+
+	if ( $query->students ) {
+		return wp_list_pluck( $query->students, 'id' );
+	}
+
+	return array();
+}
+
+/**
+ * Get the most recently created coupon ID for a given code
+ * @param   string $code        the coupon's code (title)
+ * @param   int    $dupcheck_id an optional coupon id that can be passed which will be excluded during the query
+ *                              this is used to dupcheck the coupon code during coupon creation
+ * @return  int
+ * @since   3.0.0
+ * @version 3.0.0
+ */
+function llms_find_coupon( $code = '', $dupcheck_id = 0 ) {
+
+	global $wpdb;
+	return $wpdb->get_var( $wpdb->prepare(
+		"SELECT ID
+		 FROM {$wpdb->posts}
+		 WHERE post_title = %s
+		 AND post_type = 'llms_coupon'
+		 AND post_status = 'publish'
+		 AND ID != %d
+		 ORDER BY ID desc;
+		",
+		array( $code, $dupcheck_id )
+	) );
+
+}
+
+/**
+ * Generate the HTML for a form field
+ *
+ * this function is used during AJAX calls so needs to be in a core file
+ * loaded during AJAX calls!
+ *
+ * @param    array      $field  field data
+ * @param    boolean    $echo   echo the data if true, return otherwise
+ * @return   void|string
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_form_field( $field = array(), $echo = true ) {
+
+	$field = wp_parse_args( $field, array(
+		'columns' => 12,
+		'classes' => '',
+		'description' => '',
+		'default' => '',
+		'disabled' => false,
+		'id' => '',
+		'label' => '',
+		'last_column' => true,
+		'match' => '',
+		'max_length' => '',
+		'min_length' => '',
+		'name' => '',
+		'options' => array(),
+		'placeholder' => '',
+		'required' => false,
+		'selected' => '',
+		'style' => '',
+		'type'  => 'text',
+		'value' => '',
+		'wrapper_classes' => '',
+	) );
+
+	// setup the field value (if one exists)
+	if ( '' !== $field['value'] ) {
+		$field['value'] = $field['value'];
+	} elseif ( '' !== $field['default'] ) {
+		$field['value'] = $field['default'];
+	}
+	$value_attr = ( '' !== $field['value'] ) ? ' value="' . $field['value'] . '"' : '';
+
+	// use id as the name if name isn't specified
+	$field['name'] = ( '' === $field['name'] ) ? $field['id'] : $field['name'];
+
+	// allow items to not have a name attr (eg: not be posted via form submission)
+	// example use case found in Stripe CC fields
+	if ( false === $field['name'] ) {
+		$name_attr = '';
+	} else {
+		$name_attr = ' name="' . $field['name'] . '"';
+	}
+
+	// duplicate label to placeholder if none is specified
+	$field['placeholder'] = ! $field['placeholder'] ? $field['label'] : $field['placeholder'];
+	$field['placeholder'] = wp_strip_all_tags( $field['placeholder'] );
+
+	// add inline css if set
+	$field['style'] = ( $field['style'] ) ? ' style="' . $field['style'] . '"' : '';
+
+	// add space to classes
+	$field['wrapper_classes'] = ( $field['wrapper_classes'] ) ? ' ' . $field['wrapper_classes'] : '';
+	$field['classes'] = ( $field['classes'] ) ? ' ' . $field['classes'] : '';
+
+	// add column information to the warpper
+	$field['wrapper_classes'] .= ' llms-cols-' . $field['columns'];
+	$field['wrapper_classes'] .= ( $field['last_column'] ) ? ' llms-cols-last' : '';
+
+	$desc = $field['description'] ? '<span class="llms-description">' . $field['description'] . '</span>' : '';
+
+	// required attributes and content
+	$required_char = apply_filters( 'lifterlms_form_field_required_character', '*', $field );
+	$required_span = $field['required'] ? ' <span class="llms-required">' . $required_char . '</span>' : '';
+	$required_attr = $field['required'] ? ' required="required"' : '';
+
+	// setup the label
+	$label = $field['label'] ? '<label for="' . $field['id'] . '">' . $field['label'] . $required_span . '</label>' : '';
+
+	$r  = '<div class="llms-form-field type-' . $field['type'] . $field['wrapper_classes'] . '">';
+
+	if ( 'hidden' !== $field['type'] && 'checkbox' !== $field['type'] && 'radio' !== $field['type'] ) {
+		$r .= $label;
+	}
+
+	$disabled_attr = ( $field['disabled'] ) ? ' disabled="disabled"' : '';
+
+	$min_attr = ( $field['min_length'] ) ? ' minlength="' . $field['min_length'] . '"' : '';
+	$max_attr = ( $field['max_length'] ) ? ' maxlength="' . $field['max_length'] . '"' : '';
+
+	switch ( $field['type'] ) {
+
+		case 'button':
+		case 'reset':
+		case 'submit':
+			$r .= '<button class="llms-field-button' . $field['classes'] . '" id="' . $field['id'] . '" type="' . $field['type'] . '"' . $disabled_attr . $name_attr . $field['style'] . '>' . $field['value'] . '</button>';
+			break;
+
+		case 'checkbox':
+		case 'radio':
+			$checked = ( true === $field['selected'] ) ? ' checked="checked"' : '';
+			$r .= '<input class="llms-field-input' . $field['classes'] . '" id="' . $field['id'] . '" type="' . $field['type'] . '"' . $checked . $disabled_attr . $name_attr . $required_attr . $value_attr . $field['style'] . '>';
+			$r .= $label;
+			break;
+
+		case 'html':
+			$r .= '<div class="llms-field-html' . $field['classes'] . '" id="' . $field['id'] . '"></div>';
+			break;
+
+		case 'select':
+			$r .= '<select class="llms-field-select' . $field['classes'] . '" id="' . $field['id'] . '" ' . $disabled_attr . $name_attr . $required_attr . $field['style'] . '>';
+			foreach ( $field['options'] as $k => $v ) {
+				$r .= '<option value="' . $k . '"' . selected( $k, $field['value'], false ) . '>' . $v . '</option>';
+			}
+			$r .= '</select>';
+			break;
+
+		case 'textarea':
+			$r .= '<textrea class="llms-field-textarea' . $field['classes'] . '" id="' . $field['id'] . '" placeholder="' . $field['placeholder'] . '"' . $disabled_attr . $name_attr . $required_attr . $field['style'] . '>' . $field['value'] . '</textarea>';
+			break;
+
+		default:
+			$r .= '<input class="llms-field-input' . $field['classes'] . '" id="' . $field['id'] . '" placeholder="' . $field['placeholder'] . '" type="' . $field['type'] . '"' . $disabled_attr . $name_attr . $min_attr . $max_attr . $required_attr . $value_attr . $field['style'] . '>';
+
+	}
+
+	if ( 'hidden' !== $field['type'] ) {
+		$r .= $desc;
+	}
+
+	$r .= '</div>';
+
+	if ( $field['last_column'] ) {
+		$r .= '<div class="clear"></div>';
+	}
+
+	$r = apply_filters( 'llms_form_field', $r, $field );
+
+	if ( $echo ) {
+
+		echo $r;
+		return;
+
+	} else {
+
+		return $r;
+
+	}
+
+}
+
+/**
+ * Get a list of available course / membership enrollment statuses
+ * @return   array
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_enrollment_statuses() {
+
+	return apply_filters( 'llms_get_enrollment_statuses', array(
+		'cancelled' => __( 'Cancelled', 'lifterlms' ),
+		'enrolled' => __( 'Enrolled', 'lifterlms' ),
+		'expired' => __( 'Expired', 'lifterlms' ),
+	) );
+
+}
+
+/**
+ * Get the human readable (and translated) name of an enrollment status
+ * @param    string     $status  enrollment status key
+ * @return   string
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_enrollment_status_name( $status ) {
+
+	$status = strtolower( $status ); // backwards compatibility
+	$statuses = llms_get_enrollment_statuses();
+	if ( is_array( $statuses ) && isset( $statuses[ $status ] ) ) {
+		$status = $statuses[ $status ];
+	}
+	return apply_filters( 'lifterlms_get_enrollment_status_name ', $status );
+
+}
+
+/**
+ * Retrive an IP Address for the current user
+ * @source   WooCommerce WC_Geolocation::get_ip_address(), thank you <3
+ * @return   string
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_ip_address() {
+
+	if ( isset( $_SERVER['X-Real-IP'] ) ) {
+		return $_SERVER['X-Real-IP'];
+	} elseif ( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		// Proxy servers can send through this header like this: X-Forwarded-For: client1, proxy1, proxy2
+		// Make sure we always only send through the first IP in the list which should always be the client IP.
+		return trim( current( explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+	} elseif ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
+		return $_SERVER['REMOTE_ADDR'];
+	}
+	return '';
+
+}
+
+/**
+ * Retrive an LLMS Order ID by the associated order_key
+ * @param    string    $key     the order key
+ * @param    string    $return  type of return, "order" for an instance of the LLMS_Order or "id" to return only the order ID
+ * @return   null|int           null if none found, order id if found
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_order_by_key( $key, $return = 'order' ) {
+
+	global $wpdb;
+
+	$key = sanitize_text_field( $key );
+
+	$id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_llms_order_key' AND meta_value = %s", $key ) );
+
+	if ( 'order' === $return ) {
+		return new LLMS_Order( $id );
+	}
+
+	return $id;
+
+}
+
+/**
+ * Get the human readable status for a LifterLMS status
+ * @param    string $status LifterLMS Order Status
+ * @return   string
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_order_status_name( $status ) {
+	$statuses = llms_get_order_statuses();
+	if ( is_array( $statuses ) && isset( $statuses[ $status ] ) ) {
+		$status = $statuses[ $status ];
+	}
+	return apply_filters( 'lifterlms_get_order_status_name ', $status );
+}
+
+/**
+ * Retrieve an array of registered and available LifterLMS Order Post Statuses
+ * @param    string  $order_type  filter stauses which are specific to the supplied order type, defaults to any statuses
+ * @return   array
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_order_statuses( $order_type = 'any' ) {
+
+	$statuses = array(
+		'llms-active'    => __( 'Active', 'lifterlms' ),
+		'llms-cancelled' => __( 'Cancelled', 'lifterlms' ),
+		'llms-completed' => __( 'Completed', 'lifterlms' ),
+		'llms-expired'   => __( 'Expired', 'lifterlms' ),
+		'llms-failed'    => __( 'Failed', 'lifterlms' ),
+		'llms-pending'   => __( 'Pending', 'lifterlms' ),
+		'llms-refunded'  => __( 'Refunded', 'lifterlms' ),
+	);
+
+	// remove types depending on order type
+	switch ( $order_type ) {
+		case 'recurring':
+			unset( $statuses['llms-completed'] );
+		break;
+
+		case 'single':
+			unset( $statuses['llms-active'] );
+			unset( $statuses['llms-expired'] );
+		break;
+	}
+
+	return apply_filters( 'llms_get_order_statuses', $statuses, $order_type );
+}
+
+/**
+ * Retrieve the LLMS Post Model for a give post by ID or WP_Post Object
+ * @param    obj|int     $post  instance of WP_Post or a WP Post ID
+ * @return   obj|false
+ * @since    3.3.0
+ * @version  3.3.1
+ */
+function llms_get_post( $post ) {
+
+	if ( ! empty( $post ) && is_numeric( $post ) ) {
+		$post = get_post( $post );
+	} elseif ( ! is_a( $post, 'WP_Post' ) ) {
+		return false;
+	}
+
+	switch ( $post->post_type ) {
+
+		case 'llms_access_plan':
+			$post = new LLMS_Access_Plan( $post );
+		break;
+
+		case 'llms_coupon':
+			$post = new LLMS_Coupon( $post );
+		break;
+
+		case 'course':
+			$post = new LLMS_Course( $post );
+		break;
+
+		case 'lesson':
+			$post = new LLMS_Lesson( $post );
+		break;
+
+		case 'section':
+			$post = new LLMS_Section( $post );
+		break;
+
+		case 'llms_membership':
+			$post = new LLMS_Membership( $post );
+		break;
+
+		case 'llms_order':
+			$post = new LLMS_Order( $post );
+		break;
+
+		case 'llms_quiz':
+			$post = new LLMS_Quiz( $post );
+		break;
+
+		case 'llms_question':
+			$post = new LLMS_Question( $post );
+		break;
+
+		case 'llms_transaction':
+			$post = new LLMS_Transaction( $post );
+		break;
+
+	}
+
+	return $post;
+
+}
+
+/**
+ * Retrieve an array of existing transaction statuses
+ * @return   array
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_get_transaction_statuses() {
+	return apply_filters( 'llms_get_transaction_statuses', array(
+		'llms-txn-failed',
+		'llms-txn-pending',
+		'llms-txn-refunded',
+		'llms-txn-succeeded',
+	) );
+}
+
+/**
+ * Determine is request is an ajax request
+ * @return   bool
+ * @since    3.0.1
+ * @version  3.0.1
+ */
+function llms_is_ajax() {
+	return ( defined( 'DOING_AJAX' ) && DOING_AJAX );
+}
+
+/**
+ * Check if the home URL is https. If it is, we don't need to do things such as 'force ssl'.
+ * @thanks woocommerce <3
+ * @return   bool
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_is_site_https() {
+	return false !== strstr( get_option( 'home' ), 'https:' );
+}
+
+/**
+ * Create an array that can be passed to metabox select elements
+ * configured as an llms-select2-post query-ier
+ * @param    array      $post_ids  indexed array of WordPress Post IDs
+ * @param    string     $template  an optional template to customize the way the results look
+ *                                 {title} and {id} can be passed into the template
+ *                                 and will be replaced with the post title and post id respectively
+ * @return   array
+ * @since    3.0.0
+ * @version  3.0.0
+ */
+function llms_make_select2_post_array( $post_ids = array(), $template = '' ) {
+
+	if ( ! $template ) {
+		$template = '{title} (' . __( 'ID#', 'lifterlms' ) . ' {id})';
+	}
+
+	if ( ! is_array( $post_ids ) ) {
+		$post_ids = array( $post_ids );
+	}
+
+	$r = array();
+	foreach ( $post_ids as $id ) {
+
+		$title = str_replace( array( '{title}', '{id}' ), array( get_the_title( $id ), $id ), $template );
+
+		$r[] = array(
+			'key' => $id,
+			'title' => $title,
+		);
+	}
+	return apply_filters( 'llms_make_select2_post_array', $r, $post_ids );
+
+}
+
+/**
+ * Trim a string and append a suffix.
+ * @source thank you WooCommerce <3
+ * @param  string  $string  input string
+ * @param  int     $chars   max number of characters
+ * @param  string  $suffix  optionally append a suffix
+ * @return string
+ * @since  3.0.0
+ * @version  3.0.0
+ */
+function llms_trim_string( $string, $chars = 200, $suffix = '...' ) {
+	if ( strlen( $string ) > $chars ) {
+		if ( function_exists( 'mb_substr' ) ) {
+			$string = mb_substr( $string, 0, ( $chars - mb_strlen( $suffix ) ) ) . $suffix;
+		} else {
+			$string = substr( $string, 0, ( $chars - strlen( $suffix ) ) ) . $suffix;
+		}
+	}
+	return $string;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+	       /$$                                                     /$$
+	      | $$                                                    | $$
+	  /$$$$$$$  /$$$$$$   /$$$$$$   /$$$$$$   /$$$$$$$  /$$$$$$  /$$$$$$    /$$$$$$
+	 /$$__  $$ /$$__  $$ /$$__  $$ /$$__  $$ /$$_____/ |____  $$|_  $$_/   /$$__  $$
+	| $$  | $$| $$$$$$$$| $$  \ $$| $$$$$$$$| $$        /$$$$$$$  | $$    | $$$$$$$$
+	| $$  | $$| $$_____/| $$  | $$| $$_____/| $$       /$$__  $$  | $$ /$$| $$_____/
+	|  $$$$$$$|  $$$$$$$| $$$$$$$/|  $$$$$$$|  $$$$$$$|  $$$$$$$  |  $$$$/|  $$$$$$$
+	 \_______/ \_______/| $$____/  \_______/ \_______/ \_______/   \___/   \_______/
+	                    | $$
+	                    | $$
+	                    |__/
+*/
+
+
+
+
 
 /**
  * Add product-id to WP query variables
  *
  * @param array $vars [WP query variables]
  * @return array $vars [WP query variables]
+ *
+ * @todo  deprecate?
  */
-function add_query_var_product_id( $vars ) {
+function llms_add_query_var_product_id( $vars ) {
 	$vars[] = 'product-id';
 	return $vars;
 }
-add_filter( 'query_vars', 'add_query_var_product_id' );
+add_filter( 'query_vars', 'llms_add_query_var_product_id' );
+
 
 /**
- * Get Section Id
+ * Sanitize text field
+ * @param  string $var [raw text field input]
+ * @return string [clean string]
  *
- * @param  int $course_id [course post ID]
- * @param  int $lesson_id [leson Post ID]
- * @return int $section [section post ID]
+ * @todo  deprecate b/c sanitize_text_field() already exists....
  */
-function get_section_id( $course_id, $lesson_id ) {
-
-	  $course = new LLMS_Course( $course_id );
-	  $syllabus = $course->get_syllabus();
-			$sections = array();
-			$section;
-
-	foreach ($syllabus as $key => $value) {
-
-		  $sections[ $value['section_id'] ] = $value['lessons'];
-		foreach ($value['lessons'] as $keys => $values) {
-			if ($values['lesson_id'] == $lesson_id) {
-				  $section = $value['section_id'];
-			}
-		}
-	}
-			return $section;
+function llms_clean( $var ) {
+	return sanitize_text_field( $var );
 }
 
-/**
- * Get update keys
- *
- * @param  array $query [decoded post query]
- * @return array $encoded post query
- */
-function get_update_keys( $query ) {
-	  $update_key = get_option( 'lifterlms_update_key', '' );
-	  $url = urlencode( get_bloginfo( 'url' ) );
-	  $query['updatekey'] = $update_key;
-	  $query['url'] = $url;
 
-	  return $query;
 
-}
+
+
 
 /**
  * Schedule expired membership cron
@@ -801,7 +878,7 @@ function llms_expire_membership() {
 		$meta_value_status = 'Enrolled';
 
 		$results = $wpdb->get_results( $wpdb->prepare(
-		'SELECT * FROM '.$table_name.' WHERE post_id = %d AND meta_key = "%s" AND meta_value = %s ORDER BY updated_date DESC', $post->ID, $meta_key_status, $meta_value_status ) );
+		'SELECT * FROM ' . $table_name . ' WHERE post_id = %d AND meta_key = "%s" AND meta_value = %s ORDER BY updated_date DESC', $post->ID, $meta_key_status, $meta_value_status ) );
 
 		for ($i = 0; $i < count( $results ); $i++) {
 			$results[ $results[ $i ]->post_id ] = $results[ $i ];
@@ -817,10 +894,10 @@ function llms_expire_membership() {
 			$meta_value_start_date = 'yes';
 
 			$start_date = $wpdb->get_results( $wpdb->prepare(
-			'SELECT updated_date FROM '.$table_name.' WHERE user_id = %d AND post_id = %d AND meta_key = %s AND meta_value = %s ORDER BY updated_date DESC', $user_id, $post->ID, $meta_key_start_date, $meta_value_start_date) );
+			'SELECT updated_date FROM ' . $table_name . ' WHERE user_id = %d AND post_id = %d AND meta_key = %s AND meta_value = %s ORDER BY updated_date DESC', $user_id, $post->ID, $meta_key_start_date, $meta_value_start_date) );
 
 			//add expiration terms to start date
-			$exp_date = date( 'Y-m-d',strtotime( date( 'Y-m-d', strtotime( $start_date[0]->updated_date ) ) . ' +'.$interval. ' ' . $period ) );
+			$exp_date = date( 'Y-m-d',strtotime( date( 'Y-m-d', strtotime( $start_date[0]->updated_date ) ) . ' +' . $interval . ' ' . $period ) );
 
 			// get current datetime
 			$today = current_time( 'mysql' );
@@ -828,7 +905,7 @@ function llms_expire_membership() {
 
 			//if a date parse causes exp date to be unmodified then return.
 			if ( $exp_date == $start_date[0]->updated_date ) {
-				LLMS_log( 'An error occured modifying the date value. Function: llms_expire_membership, interval: ' .  $interval . ' period: ' . $period );
+				LLMS_log( 'An error occured modifying the date value. Function: llms_expire_membership, interval: ' . $interval . ' period: ' . $period );
 				continue;
 			}
 
@@ -864,65 +941,3 @@ function llms_expire_membership() {
 
 }
 add_action( 'llms_check_for_expired_memberships', 'llms_expire_membership' );
-
-/**
- * Check Course Capacity
- *
- * @return bool [is course at capacity?]
- */
-function check_course_capacity() {
-	global $post, $wpdb;
-
-	$lesson_max_user = (int) get_post_meta( $post->ID, '_lesson_max_user', true );
-	$table_name = $wpdb->prefix . 'lifterlms_user_postmeta';
-	$results = $wpdb->get_results( 'SELECT * FROM '.$table_name.' WHERE post_id = '.$post->ID .' AND meta_value = "Enrolled"' );
-
-	if ($lesson_max_user === 0) {
-		return true;
-	} else {
-		return count( $results ) < $lesson_max_user;
-	}
-}
-
-/**
- * Add a complete / incomple class to lessons
- * @param    array $classes array of classes to be applied to the post element
- * @return   array
- * @since    2.7.11
- * @version  2.7.11
- */
-function llms_lesson_complete_class( $classes ) {
-	global $post;
-	if ( 'lesson' === get_post_type( $post->ID ) ) {
-		$lesson = new LLMS_Lesson( $post );
-		$classes[] = $lesson->is_complete() ? 'llms-complete' : 'llms-incomplete';
-	}
-	return $classes;
-
-}
-add_filter( 'post_class', 'llms_lesson_complete_class', 10, 1 );
-
-/**
- * Display lesson and course custom sidebars
- *
- * @param  array $sidebars_widgets [WP array of widgets in sidebar]
- * @return array $sidebars_widgets [Filtered WP array of widgets in sidebar]
- */
-function displaying_sidebar_in_post_types( $sidebars_widgets ) {
-	if (is_singular( 'course' ) && array_key_exists( 'llms_course_widgets_side', $sidebars_widgets )) {
-		  $sidebars_widgets['sidebar-1'] = $sidebars_widgets['llms_course_widgets_side'];
-		  $sidebars_widgets['layers-right-sidebar'] = $sidebars_widgets['llms_course_widgets_side'];
-		  $sidebars_widgets['main-sidebar'] = $sidebars_widgets['llms_course_widgets_side'];
-		  $sidebars_widgets['single-sidebar'] = $sidebars_widgets['llms_course_widgets_side'];
-		  $sidebars_widgets['primary'] = $sidebars_widgets['llms_course_widgets_side']; // woocanvas
-	} elseif (is_singular( 'lesson' ) && array_key_exists( 'llms_lesson_widgets_side', $sidebars_widgets )) {
-		  $sidebars_widgets['sidebar-1'] = $sidebars_widgets['llms_lesson_widgets_side'];
-		  $sidebars_widgets['layers-right-sidebar'] = $sidebars_widgets['llms_lesson_widgets_side'];
-		  $sidebars_widgets['single-sidebar'] = $sidebars_widgets['llms_lesson_widgets_side'];
-		  $sidebars_widgets['main-sidebar'] = $sidebars_widgets['llms_course_widgets_side'];
-		  $sidebars_widgets['primary'] = $sidebars_widgets['llms_lesson_widgets_side']; // woocanvas
-	}
-	  return $sidebars_widgets;
-
-}
-add_filter( 'sidebars_widgets', 'displaying_sidebar_in_post_types' );

@@ -1,7 +1,8 @@
 <?php
 /**
- * @author 		codeBOX
- * @package 	lifterLMS/Templates
+ * Quiz Results Template
+ * @since    1.0.0
+ * @version  3.2.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
@@ -28,12 +29,13 @@ if ( $quiz->get_total_attempts_by_user( $user_id ) ) {
 
 	$best = $quiz->get_best_quiz_attempt( $user_id );
 	$best_time = $quiz->get_total_time( $user_id, $best );
+	$best_passing = $quiz->is_passing_score( $user_id, $best );
 	?>
 
 	<div class="clear"></div>
 	<div class="llms-template-wrapper">
 		<div class="llms-quiz-results">
-		<h3>Quiz Results</h3>
+		<h3><?php _e( 'Quiz Results', 'lifterlms' ); ?></h3>
 
 			<?php
 			//determine if grade, best grade or none should be shown.
@@ -54,7 +56,7 @@ if ( $quiz->get_total_attempts_by_user( $user_id ) ) {
 				    </g>
 				  </svg>
 
-				  <div class="llms-progress-circle-count"><?php printf( __( '%s%%' ), $graph_grade ); ?></div>
+				  <div class="llms-progress-circle-count"><?php echo $graph_grade; ?>%</div>
 				</div>
 
 			<?php endif; ?>
@@ -64,17 +66,17 @@ if ( $quiz->get_total_attempts_by_user( $user_id ) ) {
 				<?php //if ($grade) : ?>
 				<ul>
 					<li>
-						<h4><?php printf( __( 'Your Score: %d%%', 'lifterlms' ), $grade ); ?></h4>
+						<h4><?php printf( __( 'Your Score: %s', 'lifterlms' ), $grade ); ?>%</h4>
 						<h5 class="llms-content-block">
 							<?php
 							if ( $is_passing_score ) {
-								echo apply_filters( 'lifterlms_quiz_passed', __( 'Passed', 'lifterlms' ) );
+								echo apply_filters( 'lifterlms_quiz_passed_text', __( 'Passed', 'lifterlms' ) );
 							} else {
-								echo apply_filters( 'lifterlms_quiz_failed', __( 'Failed', 'lifterlms' ) );
+								echo apply_filters( 'lifterlms_quiz_failed_text', __( 'Failed', 'lifterlms' ) );
 							}
 							?>
 						</h5>
-						<h6><?php printf( __( '%d / %d correct answers', 'lifterlms' ), $quiz->get_correct_answers_count( $user_id ), $quiz->get_question_count() ); ?></h6>
+						<h6><?php printf( __( '%1$d / %2$d correct answers', 'lifterlms' ), $quiz->get_correct_answers_count( $user_id ), $quiz->get_question_count() ); ?></h6>
 						<h6><?php printf( __( 'Date: <span class="llms_content_block">%s</span>', 'lifterlms' ), $start_date ); ?></h6>
 						<h6><?php printf( __( 'Total time: %s', 'lifterlms' ), $time ); ?></h6>
 
@@ -90,17 +92,17 @@ if ( $quiz->get_total_attempts_by_user( $user_id ) ) {
 				<?php //if ($best_grade ) ) : ?>
 				<ul>
 					<li>
-						<h4><?php printf( __( 'Best Score: %d%%', 'lifterlms' ), $best_grade ); ?></h4>
+						<h4><?php printf( __( 'Best Score: %1$d%', 'lifterlms' ), $best_grade ); ?>%</h4>
 						<h5>
 							<?php
-							if ( $is_passing_score ) {
-								echo apply_filters( 'lifterlms_quiz_passed', __( 'Passed', 'lifterlms' ) );
+							if ( $best_passing ) {
+								echo apply_filters( 'lifterlms_quiz_passed_text', __( 'Passed', 'lifterlms' ) );
 							} else {
-								echo apply_filters( 'lifterlms_quiz_failed', __( 'Failed', 'lifterlms' ) );
+								echo apply_filters( 'lifterlms_quiz_failed_text', __( 'Failed', 'lifterlms' ) );
 							}
 							?>
 						</h5>
-						<h6><?php printf( __( '%d / %d correct answers', 'lifterlms' ), $quiz->get_correct_answers_count( $user_id, $best ), $quiz->get_question_count() ); ?></h6>
+						<h6><?php printf( __( '%1$d / %1$d correct answers', 'lifterlms' ), $quiz->get_correct_answers_count( $user_id, $best ), $quiz->get_question_count() ); ?></h6>
 						<h6><?php printf( __( 'Date: <span class="llms_content_block">%s</span>', 'lifterlms' ), $start_date ); ?></h6>
 						<h6><?php printf( __( 'Total time: %s', 'lifterlms' ), $best_time ); ?></h6>
 					</li>

@@ -1,7 +1,6 @@
 <?php
 
-class N2SmartSliderItem
-{
+class N2SmartSliderItem {
 
     public static $i = array();
 
@@ -93,11 +92,20 @@ class N2SmartSliderItem
         }
         return $item;
     }
+
+    public static function prepareFixed($item) {
+        self::_load();
+        $type = $item['type'];
+        if (isset(self::$items[$type])) {
+            $item['values'] = self::$items[$type]->prepareFixed(new N2Data($item['values']))
+                                                 ->toArray();
+        }
+        return $item;
+    }
 }
 
 
-class N2SmartSliderItemHelper
-{
+class N2SmartSliderItemHelper {
 
     public $layer;
     public $data = array(

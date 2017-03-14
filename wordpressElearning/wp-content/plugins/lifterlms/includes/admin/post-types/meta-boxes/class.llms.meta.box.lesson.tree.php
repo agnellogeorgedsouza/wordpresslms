@@ -20,10 +20,10 @@ class LLMS_Meta_Box_Lesson_Tree {
 		global $wpdb, $post;
 		wp_nonce_field( 'lifterlms_save_data', 'lifterlms_meta_nonce' );
 
-		$parent_section_id = get_post_meta( $post->ID, '_parent_section', true );
+		$parent_section_id = get_post_meta( $post->ID, '_llms_parent_section', true );
 		$parent_section_id = $parent_section_id ? $parent_section_id : '';
 
-		$parent_course_id = get_post_meta( $post->ID, '_parent_course', true );
+		$parent_course_id = get_post_meta( $post->ID, '_llms_parent_course', true );
 		$parent_course_id = $parent_course_id ? $parent_course_id : '';
 
 		$all_sections = LLMS_Post_handler::get_posts( 'section' );
@@ -69,7 +69,7 @@ class LLMS_Meta_Box_Lesson_Tree {
 
 		if ( $parent_course_id ) {
 			$course = new LLMS_Course( $parent_course_id );
-			$sections = $course->get_children_sections();
+			$sections = $course->get_sections( 'posts' );
 
 			$html .= '<span class="llms-access-levels-title"><a href="' . get_edit_post_link( $course->id ) . '">'
 			. $course->post->post_title . '</a> '
@@ -132,8 +132,8 @@ class LLMS_Meta_Box_Lesson_Tree {
 
 		if ( isset( $_POST['associated_section'] ) ) {
 			$parent_section = llms_clean( $_POST['associated_section'] );
-			$parent_course = get_post_meta( $parent_section, '_parent_course', true );
-			$current_parent_section = get_post_meta( $post_id, '_parent_section', true );
+			$parent_course = get_post_meta( $parent_section, '_llms_parent_course', true );
+			$current_parent_section = get_post_meta( $post_id, '_llms_parent_section', true );
 
 			if ( $current_parent_section !== $parent_section ) {
 
@@ -142,7 +142,7 @@ class LLMS_Meta_Box_Lesson_Tree {
 
 				} else {
 
-					LLMS_Admin_Meta_Boxes::get_error( __( 'There was an error assigning the lesson to a section. Please be sure a section is assigned to a course.', 'lifterlms' ) );
+					LLMS_Admin_Meta_Boxes::add_error( __( 'There was an error assigning the lesson to a section. Please be sure a section is assigned to a course.', 'lifterlms' ) );
 
 				}
 			}

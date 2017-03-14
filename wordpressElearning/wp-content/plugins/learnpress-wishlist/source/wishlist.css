@@ -1,0 +1,52 @@
+/*.course-wishlist {
+	color: #d3d3d3;
+	transition: all 1s;
+	cursor: pointer;
+	vertical-align: middle;
+}
+.course-wishlist.on {
+	color: #ff0084;
+}
+
+.course-wishlist:hover {
+	color: #ff0084;
+}
+.course-wishlist.on:hover {
+	color: #d3d3d3;
+}*/
+#learn-press-profile-tab-course-wishlist.has-courses .learn-press-message{
+	display: none;
+}
+.course-wishlist.heartbeat{
+	animation-name: course-wishlist-heartbeat;
+	animation-duration: 1s;
+	animation-timing-function: ease-out;
+	animation-delay: 3s;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+	animation-fill-mode: none;
+	animation-play-state: running;
+}
+
+.course-wishlist.heartbeat.ajaxload{
+	animation-duration: 0.3s;
+	animation-name: course-wishlist-heartbeat-ajaxload;
+	animation-delay: 0s;
+}
+
+@keyframes course-wishlist-heartbeat {
+	0% {
+		transform: scale(1);
+	}
+	100% {
+		transform: scale(1.2);
+	}
+}
+@keyframes course-wishlist-heartbeat-ajaxload {
+	0% {
+		transform: scale(1);
+	}
+	100% {
+		transform: scale(1.5);
+	}
+}

@@ -1,12 +1,12 @@
 <?php
+/**
+ * Admin Settings Page, General Tab
+ * @since  1.0.0
+ * @version  3.0.0
+*/
+
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-/**
-* Admin Settings Page, General Tab
-*
-* @author codeBOX
-* @project lifterLMS
-*/
 class LLMS_Settings_General extends LLMS_Settings_Page {
 
 	/**
@@ -15,6 +15,7 @@ class LLMS_Settings_General extends LLMS_Settings_Page {
 	* executes settings tab actions
 	*/
 	public function __construct() {
+
 		$this->id    = 'general';
 		$this->label = __( 'General', 'lifterlms' );
 
@@ -29,178 +30,174 @@ class LLMS_Settings_General extends LLMS_Settings_Page {
 	 * Get settings array
 	 *
 	 * @return array
+	 * @since  1.0.0
+	 * @version  3.0.0
 	 */
 	public function get_settings() {
 
-		$currency_code_options = get_lifterlms_currencies();
+		return apply_filters( 'lifterlms_general_settings', array(
 
-		foreach ( $currency_code_options as $code => $name ) {
-			$currency_code_options[ $code ] = $name . ' (' . get_lifterlms_currency_symbol( $code ) . ')';
-		}
-
-		if ( ! get_option( 'lifterlms_first_time_setup' ) ) {
-			return apply_filters( 'lifterlms_general_settings', array(
-
-				array( 'type' => 'sectionstart', 'id' => 'general_information', 'class' => 'top' ),
-
-				array(
-					'title' => __( 'Welcome to LifterLMS', 'lifterlms' ),
-					'type' => 'desc',
-					'desc' => '
-						<h2>' . __( 'Getting Started with LifterLMS', 'lifterlms' ) . '</h2>
-						<p>' . __( 'Before you start creating courses, making lots of money and building the best (insert your business here) online there are a few setup items we need to address.', 'lifterlms' ) . '</p>
-						<p>' . __( 'We need to set up your pages. Ya, we know, more pages... That\'s just the way Wordpress works. We\'ve already installed them. You just need to set them.', 'lifterlms' ) . '</p>
-						' . __( 'When you installed LifterLMS we created a few pages for you. You can select those pages or use different ones. Your choice.', 'lifterlms' ) . '</p>
-						<p>' . __( 'The first page you need is the Student Account page. This is the page users will go to register, login and access their accounts. We installed a page called My Courses. You can use that or select a different page. If you happen to select a different page you will need to add this shortcode to the page:', 'lifterlms' ) . ' [lifterlms_my_account]</p>',
-					'id' => 'welcome_options_setup',
-				),
-
-				array(
-					'title' => __( 'Account Access Page', 'lifterlms' ),
-					'desc' 		=> __( 'We suggest you choose "My Courses"', 'lifterlms' ),
-					'id' 		=> 'lifterlms_myaccount_page_id',
-					'type' 		=> 'single_select_page',
-					'default'	=> '',
-					'class'		=> 'chosen_select_nostd',
-					'desc_tip'	=> true,
-				),
-
-				array(
-					'type' => 'desc',
-					'desc' => '<p>' . __( 'Next we need a checkout page so people can buy your courses and memberships. If you are a true philanthropist and don\'t plan on selling anything you can skip setting up this page. We created a page called "Purchase you can use that or select a different page.', 'lifterlms' ) . '</p>',
-					'id' => 'welcome_options_setup',
-				),
-
-				array(
-					'title' => __( 'Checkout Page', 'lifterlms' ),
-					'desc' 		=> __( 'We suggest you choose "Purchase"', 'lifterlms' ),
-					'id' 		=> 'lifterlms_checkout_page_id',
-					'type' 		=> 'single_select_page',
-					'default'	=> '',
-					'class'		=> 'chosen_select_nostd',
-					'desc_tip'	=> __( 'This sets the base page of the checkout page', 'lifterlms' ),
-				),
-
-				array(
-					'type' => 'desc',
-					'desc' => '
-					<p>' . __( 'If you are going to sell your courses you should probably pick a currency.', 'lifterlms' ) . '</p>',
-					'id' => 'welcome_options_setup',
-				),
-
-				array(
-					'title' 	=> __( 'Default Currency', 'lifterlms' ),
-					'desc' 		=> __( 'Default currency type.', 'lifterlms' ),
-					'id' 		=> 'lifterlms_currency',
-					'default'	=> 'USD',
-					'type' 		=> 'select',
-					'class'		=> 'chosen_select',
-					'desc_tip'	=> true,
-					'options'   => $currency_code_options,
-				),
-
-				array(
-					'type' => 'desc',
-					'desc' => '
-						<p>' . __( 'There are a lot of other settings but those were the important ones to get you started. You can access all of the other settings from the big blue menu at the top of the page.', 'liftelrms' ) . '</p>
-						<p>' . __( 'If you have any questions or want to request a feature head on over to our', 'lifterlms' ) . ' <a href="https://lifterlms.com/forums/">' . __( 'Support Forums.', 'lifterlms' ) . '</a></p>
-						<p>' . __( 'That\'s all there is to it. Your ready to start building courses and changing the world!', 'lifterlms' ) . '</p>
-						<p>' . __( 'Click "Save Changes" below to save your settings and get started.', 'lifterlms' ) . '</p>',
-					'id' => 'welcome_options_setup',
-				),
-
-				/**
-				 * Hidden Values
-				 */
-
-				// first time setup is complete
-				array(
-					'type' => 'hidden',
-					'value' => 'yes',
-					'id' => 'lifterlms_first_time_setup',
-				),
-
-				// don't enable legacy cert settings for a new installation!
-				array(
-					'type' => 'hidden',
-					'value' => 'no',
-					'id' => 'lifterlms_certificate_legacy_image_size',
-				),
-
-				array( 'type' => 'sectionend', 'id' => 'welcome_options_activate' ),
-
-			) );
-
-		} else {
-
-			return apply_filters( 'lifterlms_general_settings', array(
-
-				array(
-						'type' => 'custom-html',
-						'value' => self::get_stats_widgets(),
-				),
-
-				array(
+			array(
 					'type' => 'custom-html',
-					'value' => self::get_big_banners(),
+					'value' => self::get_stats_widgets(),
+			),
+
+			array(
+				'type' => 'custom-html',
+				'value' => self::get_big_banners(),
+			),
+
+			array(
+					'type' => 'custom-html',
+					'value' => self::get_small_banners(),
+			),
+
+			array( 'type' => 'sectionstart', 'id' => 'general_information', 'class' => 'top' ),
+
+			array(
+				'title' => __( 'Quick Links',
+				'lifterlms' ),
+					'type' => 'title',
+					'desc' => '
+
+					<div class="llms-list">
+						<ul>
+							<li><p>' . sprintf( __( 'Version: %s', 'lifterlms' ), LLMS()->version ) . '</p></li>
+							<li><p>' . sprintf( __( 'Need help? Get support on the %1$sforums%2$s', 'lifterlms' ), '<a href="https://wordpress.org/support/plugin/lifterlms" target="_blank">' , '</a>' ) . '</p></li>
+							<li><p>' . sprintf( __( 'Looking for a quickstart guide, shortcodes, or developer documentation? Get started at %s', 'lifterlms' ), '<a href="https://lifterlms.com/docs" target="_blank">https://lifterlms.com/docs</a>' ) . '</p></li>
+							<li><p>' . sprintf( __( 'Get LifterLMS news, updates, and more on our %1$sblog%2$s', 'lifterlms' ), '<a href="http://blog.lifterlms.com/" target="_blank">', '</a>' ) . '</p></li>
+						</ul>
+					</div>',
+				'id' => 'activation_options',
+			),
+
+			array( 'type' => 'sectionend', 'id' => 'general_information' ),
+
+			array(
+				'id' => 'section_features',
+				'type' => 'sectionstart',
+			),
+
+			array(
+				'id' => 'features',
+				'title' => __( 'Features', 'lifterlms' ),
+				'type' => 'title',
+			),
+
+			array(
+				'type' => 'custom-html',
+				'value' => sprintf(
+					__( 'Automatic Recurring Payments: <strong>%s</strong>', 'lifterlms' ),
+					LLMS_Site::get_feature( 'recurring_payments' ) ? __( 'Enabled', 'lifterlms' ) : __( 'Disabled', 'lifterlms' )
 				),
+			),
 
-				array(
-						'type' => 'custom-html',
-						'value' => self::get_small_banners(),
-				),
+			array(
+				'id' => 'section_tools',
+				'type' => 'sectionend',
+			),
 
-				array( 'type' => 'sectionstart', 'id' => 'general_information', 'class' => 'top' ),
+			array(
+				'id' => 'section_tools',
+				'type' => 'sectionstart',
+			),
 
-				array(
-					'title' => __( 'Quick Links',
-					'lifterlms' ),
-						'type' => 'title',
-						'desc' => '
+			array(
+				'id' => 'tools_utilities',
+				'title' => __( 'Tools and Utilities', 'lifterlms' ),
+				'type' => 'title',
+			),
 
-						<div class="llms-list">
-							<ul>
-								<li><p>' . __( 'Version:', 'lifterlms' ) . ' ' . LLMS()->version . '</p></li>
-								<li><p>' . __( 'Need help? Send us a support request at ', 'lifterlms' ) . ' <a href="https://lifterlms.com/contact/" target="_blank">' . __( 'https://lifterlms.com/contact/' ) . '</a>.</p></li>
-								<li><p>' . __( 'Looking for a quickstart guide, shortcodes, or developer documentation? Visit our documentation portal at ', 'lifterlms' ) . ' <a href="https://lifterlms.readme.io/" target="_blank">' . __( 'https://lifterlms.readme.io/' ) . '</a>.</p></li>
-								<li><p>' . __( 'Get LifterLMS news, updates, and more on our blog at ', 'lifterlms' ) . ' <a href="http://blog.lifterlms.com/" target="_blank">' . __( 'http://blog.lifterlms.com/' ) . '</a></p></li>
-							</ul>
-						</div>',
-					'id' => 'activation_options',
-				),
+			array(
+				'desc' => __( 'Allows you to choose to enable or disable automatic recurring payments which may be disabled on a staging site.', 'lifterlms' ),
+				'name' => 'automatic-payments',
+				'title' => __( 'Automatic Paymets', 'lifterlms' ),
+				'type' 		=> 'button',
+				'value' => __( 'Reset Automatic Payments', 'lifterlms' ),
+			),
 
-				array( 'type' => 'sectionend', 'id' => 'general_information' ),
+			array(
+				'desc' => __( 'Manage User Sessions. LifterLMS creates custom user sessions to manage, payment processing, quizzes and user registration. If you are experiencing issues or incorrect error messages are displaying. Clearing out all of the user session data may help.', 'lifterlms' ),
+				'name' => 'clear-sessions',
+				'title' => __( 'Sessions', 'lifterlms' ),
+				'type' 		=> 'button',
+				'value' => __( 'Clear All Session Data', 'lifterlms' ),
+			),
 
-				array( 'type' => 'sectionstart', 'id' => 'session_manager' ),
+			array(
+				'desc' => __( 'If you opted into LifterLMS Tracking and no longer wish to participate, you may opt out here.', 'lifterlms' ),
+				'name' => 'reset-tracking',
+				'title' => __( 'Tracking Status', 'lifterlms' ),
+				'type' 		=> 'button',
+				'value' => __( 'Reset Tracking Status', 'lifterlms' ),
+			),
 
-				array( 'title' => __( 'Session Management', 'lifterlms' ), 'type' => 'title', 'desc' => __( 'Manage User Sessions. LifterLMS creates custom user sessions to manage, payment processing, quizzes and user registration. If you are experiencing issues or incorrect error messages are displaying. Clearing out all of the user session data may help.', 'lifterlms' ), 'id' => 'session_manager' ),
+			array(
+				'value' => '
+					<tr valign="top"><th><label>' . __( 'Setup Wizard', 'lifterlms' ) . '</label></th>
+					<td class="forminp forminp-button">
+					<div id="llms-form-wrapper">
+						<span class="description">' . __( 'If you want to run the LifterLMS Setup Wizard again or skipped it and want to return now, click below.', 'lifterlms' ) . '</span>
+						<br><br>
+						<a class="llms-button-primary" href="' . admin_url() . '?page=llms-setup">' . __( 'Return to Setup Wizard', 'lifterlms' ) . '</a>
+					</div>
+					</td></tr>
+				',
+				'type' => 'custom-html-no-wrap',
+			),
 
-				array(
-					'title' => '',
-					'value' => __( 'Clear All User Session Data', 'lifterlms' ),
-					'type' 		=> 'button',
-				),
+			array(
+				'desc' => __( 'Clears the cached data displayed on various reporting screens. This does not affect actual student progress, it only clears cached progress data. This data will be regenerated the next time it is accessed.', 'lifterlms' ),
+				'name' => 'clear-cache',
+				'title' => __( 'Clear Student Progress Cache', 'lifterlms' ),
+				'type' 		=> 'button',
+				'value' => __( 'Clear Cache', 'lifterlms' ),
+			),
 
-				array( 'type' => 'sectionend', 'id' => 'session_manager' ),
+			array(
+				'id' => 'section_tools',
+				'type' => 'sectionend',
+			),
 
-			 	)
-			);
-		}
+		) );
 
 	}
 
 	/**
 	 * register new hooks
 	 * @return void
+	 * @since  1.0.0
+	 * @version  3.0.0
 	 */
 	public function register_hooks() {
 
-		if ( isset( $_POST['save'] ) && strtolower( $_POST['save'] ) == 'clear all user session data') {
-			$session_handler = new LLMS_Session_Handler();
+		// @todo this doesnt appaer like it does what its supposed to...
+		if ( isset( $_POST['clear-sessions'] ) ) {
+			session_unset();
+		}
 
-			$session_handler->delete_all_session_data();
+		if ( isset( $_POST['clear-cache'] ) ) {
+
+			global $wpdb;
+
+			// Delete all cached student data
+			$wpdb->query( $wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}usermeta WHERE meta_key = %s or meta_key = %s;",
+				'llms_overall_progress', 'llms_overall_grade'
+			) );
 
 		}
+
+		if ( isset( $_POST['reset-tracking'] ) ) {
+			update_option( 'llms_allow_tracking', 'no' );
+		}
+
+		// deletes the "ignore" url so the staging modal will re-appear
+		if ( isset( $_POST['automatic-payments'] ) ) {
+			LLMS_Site::clear_lock_url();
+			update_option( 'llms_site_url_ignore', 'no' );
+		}
+
 	}
 
 	/**
@@ -233,7 +230,7 @@ class LLMS_Settings_General extends LLMS_Settings_Page {
 						<div class="llms-widget"><p class="llms-label">' . __( 'Lessons Completed This Week', 'lifterlms' ) . '</p><h1>' . $lessons_completed . '</h1></div>
 					</div>
 					<div class="llms-widget-1-4">
-						<div class="llms-widget"><p class="llms-label">' . __( 'Total Sales This Week', 'lifterlms' ) . '</p><h1>' . $total_sales .'</h1></div>
+						<div class="llms-widget"><p class="llms-label">' . __( 'Total Sales This Week', 'lifterlms' ) . '</p><h1>' . $total_sales . '</h1></div>
 					</div>
 				</div>';
 		return preg_replace( '~>\s+<~', '><', $html );
@@ -264,17 +261,35 @@ class LLMS_Settings_General extends LLMS_Settings_Page {
 				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/stripe-w-desc.png',
 				'link' => 'https://lifterlms.com/product/stripe-extension/?ims=ystxm&utm_campaign=Plugin+to+Sale&utm_source=LifterLMS+Plugin&utm_medium=General+Settings+Screen&utm_content=Stripe+Ad+001',
 			),
-			'lifterlms-mailchimp' => array(
+			'lifterlms-gateway-paypal' => array(
 				'type' => 'plugin',
-				'title' => 'Mailchimp Plugin',
-				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/mailchimp-w-desc.png',
-				'link' => 'https://lifterlms.com/product/mailchimp-extension/?ims=ycdkk&utm_campaign=Plugin+to+Sale&utm_source=LifterLMS+Plugin&utm_medium=General+Settings+Screen&utm_content=Mailchimp+Ad+001',
+				'title' => 'PayPal Plugin',
+				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/paypal.jpg',
+				'link' => 'https://lifterlms.com/product/stripe-extension/?ims=ystxm&utm_campaign=Plugin+to+Sale&utm_source=LifterLMS+Plugin&utm_medium=General+Settings+Screen&utm_content=PayPal+Ad+001',
+			),
+			'lifterlms-integration-woocommerce' => array(
+				'type' => 'plugin',
+				'title' => 'WooCommerce Plugin',
+				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/woocommerce.jpg',
+				'link' => 'https://lifterlms.com/product/stripe-extension/?ims=ystxm&utm_campaign=Plugin+to+Sale&utm_source=LifterLMS+Plugin&utm_medium=General+Settings+Screen&utm_content=WooCommerce+Ad+001',
 			),
 			'lifterlms-convertkit' => array(
 				'type' => 'plugin',
 				'title' => 'ConvertKit',
 				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/convertkit.png',
 				'link'	=> 'https://lifterlms.com/product/lifterlms-convertkit/?utm_source=Plugin&utm_medium=Plugin%2BDashboard&utm_content=Plugin%2BAd&utm_campaign=Plugin',
+			),
+			'lifterlms-mailchimp' => array(
+				'type' => 'plugin',
+				'title' => 'Mailchimp Plugin',
+				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/mailchimp-w-desc.png',
+				'link' => 'https://lifterlms.com/product/mailchimp-extension/?ims=ycdkk&utm_campaign=Plugin+to+Sale&utm_source=LifterLMS+Plugin&utm_medium=General+Settings+Screen&utm_content=Mailchimp+Ad+001',
+			),
+			'lifterlms-integration-gravity-forms' => array(
+				'type' => 'plugin',
+				'title' => 'GravityForms Plugin',
+				'image' => LLMS()->plugin_url() . '/assets/images/admin-banners/gravityforms.jpg',
+				'link' => 'https://lifterlms.com/product/mailchimp-extension/?ims=ycdkk&utm_campaign=Plugin+to+Sale&utm_source=LifterLMS+Plugin&utm_medium=General+Settings+Screen&utm_content=GravityForms+Ad+001',
 			),
 			'lifterlms-boost' => array(
 				'type' => 'service',
@@ -303,7 +318,7 @@ class LLMS_Settings_General extends LLMS_Settings_Page {
 			switch ( $banner['type'] ) {
 
 				case 'plugin':
-					if ( in_array( $slug . DIRECTORY_SEPARATOR . $slug .'.php', $plugins ) ) {
+					if ( in_array( $slug . DIRECTORY_SEPARATOR . $slug . '.php', $plugins ) ) {
 						continue 2;
 					}
 				break;

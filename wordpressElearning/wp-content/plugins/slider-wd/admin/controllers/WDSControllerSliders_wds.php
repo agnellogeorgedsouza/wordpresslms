@@ -208,7 +208,7 @@ class WDSControllerSliders_wds {
     $fixed_bg = ((isset($params_array['fixed_bg'])) ? (int) esc_html(stripslashes($params_array['fixed_bg'])) : 0);
     $smart_crop = ((isset($params_array['smart_crop'])) ? (int) esc_html(stripslashes($params_array['smart_crop'])) : 0);
     $crop_image_position = ((isset($params_array['crop_image_position'])) ? esc_html(stripslashes($params_array['crop_image_position'])) : 'middle-center');
-    $javascript = ((isset($params_array['javascript'])) ? esc_html(stripslashes($params_array['javascript'])) : '');
+    $javascript = ((isset($params_array['javascript'])) ? $params_array['javascript'] : '');
     $carousel_degree = ((isset($params_array['carousel_degree'])) ? (int) esc_html(stripslashes($params_array['carousel_degree'])) : 0);
     $carousel_grayscale = ((isset($params_array['carousel_grayscale'])) ? (int) esc_html(stripslashes($params_array['carousel_grayscale'])) : 0);
     $carousel_transparency = ((isset($params_array['carousel_transparency'])) ? (int) esc_html(stripslashes($params_array['carousel_transparency'])) : 0);
@@ -726,14 +726,15 @@ class WDSControllerSliders_wds {
     $this->display();
   }
 
-  public function duplicate_tables($slider_id) {
+  public function duplicate_tables($slider_id, $new_slider_name = "") {
     global $wpdb;
     if ($slider_id) {
-      $slider_row = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'wdsslider where id="%d"', $slider_id));    
-    }      
+      $slider_row = $wpdb->get_row($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'wdsslider where id="%d"', $slider_id));
+    }  
     if ($slider_row) {
+      $name = $new_slider_name ? $new_slider_name : $slider_row->name;
       $save = $wpdb->insert($wpdb->prefix . 'wdsslider', array(
-        'name' => $slider_row->name,
+        'name' => $name,
         'published' => $slider_row->published,
         'full_width' => $slider_row->full_width,
         'width' => $slider_row->width,
@@ -838,7 +839,7 @@ class WDSControllerSliders_wds {
         'bull_hover' => $slider_row->bull_hover,
         'show_thumbnail' => $slider_row->show_thumbnail,
         'thumb_size' => $slider_row->thumb_size,
-	'hide_on_mobile' => $slider_row->hide_on_mobile,
+        'hide_on_mobile' => $slider_row->hide_on_mobile,
       ));
       $new_slider_id = $wpdb->get_var('SELECT MAX(id) FROM ' . $wpdb->prefix . 'wdsslider');
 
@@ -1207,6 +1208,122 @@ class WDSControllerSliders_wds {
       echo WDW_S_Library::message('You must select at least one item.', 'wd_error');
     }
     $this->display();
+  }
+  
+  public function merge_sliders($id) {
+     global $wpdb;
+     $flag = FALSE;
+     $check_sliders = array();
+     $sliders_names = array();
+     $sliders_ids_col = $wpdb->get_results('SELECT id, name FROM ' . $wpdb->prefix . 'wdsslider ORDER BY id');
+     $name = "Merged sliders of ";
+     foreach ($sliders_ids_col as $slider_id) {
+       if (isset($_POST['check_' . $slider_id->id])) {
+         $check_sliders[] = $slider_id->id;
+         $sliders_names[] = $slider_id->name;
+       }
+     }
+     if (count($check_sliders) > 1) {
+       $name .= implode(",",$sliders_names);
+       $last_slider_id = $check_sliders[count($check_sliders) - 1];
+       $new_slider_id = $this->duplicate_tables($last_slider_id, $name);
+       $max_order = $wpdb->get_var($wpdb->prepare('SELECT MAX(`order`) FROM ' . $wpdb->prefix . 'wdsslide WHERE slider_id="%d"',$new_slider_id));
+       array_pop($check_sliders);
+       $this->insert_slides($new_slider_id, $check_sliders, $max_order);
+       $flag = TRUE;
+       echo WDW_S_Library::message('The selected items are merged as a new slider.', 'wd_updated');
+     }
+     else {
+       echo WDW_S_Library::message('You should select at least 2 sliders to merge them.', 'wd_error');
+     }
+     $this->display();
+  }
+
+  public function insert_slides($slider_id, $check_sliders, $max_order) {
+    global $wpdb;
+    if ($slider_id) {
+      $slides = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'wdsslide WHERE slider_id In ('.implode(",", $check_sliders).')'); 
+    }       
+    if ($slides) {
+      foreach ($slides as $single_slide) {
+        $max_order++;
+        $save = $wpdb->insert($wpdb->prefix . 'wdsslide', array(
+          'slider_id' => $slider_id,
+          'title' => $single_slide->title,
+          'type' => $single_slide->type,
+          'order' => $max_order,
+          'published' => $single_slide->published,
+          'link' => $single_slide->link,
+          'image_url' => $single_slide->image_url,
+          'thumb_url' => $single_slide->thumb_url,
+          'target_attr_slide' => $single_slide->target_attr_slide,
+          'youtube_rel_video' => $single_slide->youtube_rel_video,
+          'video_loop' => $single_slide->video_loop,
+        ));
+        $new_slide_id = $wpdb->get_var('SELECT MAX(id) FROM ' . $wpdb->prefix . 'wdsslide');
+        $slider_layer = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . $wpdb->prefix . 'wdslayer where slide_id="%d"', $single_slide->id));
+        if ($slider_layer) {
+          foreach ($slider_layer as $layer_id) {
+            if ($layer_id) {
+              $save = $wpdb->insert($wpdb->prefix . 'wdslayer', array(
+                'slide_id' => $new_slide_id,
+                'title' => $layer_id->title,
+                'type' => $layer_id->type,
+                'depth' => $layer_id->depth,
+                'text' => $layer_id->text,
+                'link' => $layer_id->link,
+                'left' => $layer_id->left,
+                'top' => $layer_id->top,
+                'start' => $layer_id->start,
+                'end' => $layer_id->end,
+                'published' => $layer_id->published,
+                'color' => $layer_id->color,
+                'size' => $layer_id->size,
+                'ffamily' => $layer_id->ffamily,
+                'fweight' => $layer_id->fweight,
+                'padding' => $layer_id->padding,
+                'fbgcolor' => $layer_id->fbgcolor,
+                'transparent' => $layer_id->transparent,
+                'border_width' => $layer_id->border_width,
+                'border_style' => $layer_id->border_style,
+                'border_color' => $layer_id->border_color,
+                'border_radius' => $layer_id->border_radius,
+                'shadow' => $layer_id->shadow,
+                'image_url' => $layer_id->image_url,
+                'image_width' => $layer_id->image_width,
+                'image_height' => $layer_id->image_height,
+                'image_scale' => $layer_id->image_scale,
+                'alt' => $layer_id->alt,
+                'imgtransparent' => $layer_id->imgtransparent,
+                'social_button' => $layer_id->social_button,
+                'hover_color' => $layer_id->hover_color,
+                'layer_effect_in' => $layer_id->layer_effect_in,
+                'layer_effect_out' => $layer_id->layer_effect_out,
+                'duration_eff_in' => $layer_id->duration_eff_in,
+                'duration_eff_out' => $layer_id->duration_eff_out,
+                'target_attr_layer' => $layer_id->target_attr_layer,
+                'hotp_width' => $layer_id->hotp_width,
+                'hotp_fbgcolor' => $layer_id->hotp_fbgcolor,
+                'hotp_border_width' => $layer_id->hotp_border_width,
+                'hotp_border_style' => $layer_id->hotp_border_style,
+                'hotp_border_color' => $layer_id->hotp_border_color,
+                'hotp_border_radius' => $layer_id->hotp_border_radius,
+                'hotp_text_position' => $layer_id->hotp_text_position,
+                'google_fonts' => $layer_id->google_fonts,
+                'add_class' => $layer_id->add_class,
+                'layer_video_loop' => $layer_id->layer_video_loop,
+                'youtube_rel_layer_video' => $layer_id->youtube_rel_layer_video,
+                'hotspot_animation' => $layer_id->hotspot_animation,
+                'layer_callback_list' => $layer_id->layer_callback_list,
+                'hotspot_text_display' => $layer_id->hotspot_text_display,
+                'hover_color_text' => $layer_id->hover_color_text,
+              ));
+            }
+          }
+        }
+      }
+    }
+    return $slider_id;
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////

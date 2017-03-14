@@ -50,6 +50,29 @@ class LLMS_Quiz {
 	}
 
 	/**
+	 * Determine if a student can take the quiz
+	 * @param    int      $user_id   WP User ID
+	 * @return   boolean
+	 * @since    3.0.0
+	 * @version  3.0.0
+	 */
+	public function is_open( $user_id ) {
+
+		$remaining = $this->get_remaining_attempts_by_user( $user_id );
+
+		// string for "unlimited" or number of attempts
+		if ( ! is_numeric( $remaining ) || $remaining > 0 ) {
+
+			return true;
+
+		}
+
+		return false;
+
+	}
+
+
+	/**
 	* __isset function
 	*
 	* checks if metadata exists
@@ -265,9 +288,9 @@ class LLMS_Quiz {
 	 * @return bool [is grade > required passing percent]
 	 */
 	public function is_passing_score( $user_id, $grade ) {
-		$biggest_score = max( $this->get_best_grade( $user_id ), $grade );
+		// $biggest_score = max( $this->get_best_grade( $user_id ), $grade );
 
-		return ( $this->get_passing_percent() <= $biggest_score );
+		return ( $this->get_passing_percent() <= $grade );
 	}
 
 	public function get_end_date( $user_id, $unique_id = '' ) {
@@ -362,6 +385,8 @@ class LLMS_Quiz {
 	 * Get remaining quiz attempts
 	 * @param  int $user_id [ID of user]
 	 * @return int [number of attempts user has remaining]
+	 *
+	 * @version 3.0.0 -- display 0 instead of negative attempts
 	 */
 	public function get_remaining_attempts_by_user( $user_id ) {
 		$attempts_allowed = $this->get_total_allowed_attempts();
@@ -374,11 +399,18 @@ class LLMS_Quiz {
 				$attempts = 0;
 			}
 
-			$total_attempts_remaining = ($attempts_allowed - $attempts);
+			$total_attempts_remaining = ( $attempts_allowed - $attempts );
+
+			// don't show negative attmepts
+			if ( $total_attempts_remaining < 0 ) {
+
+				$total_attempts_remaining = 0;
+
+			}
 
 		} else {
 
-			$total_attempts_remaining = __( 'unlimited', 'lifterlms' );
+			$total_attempts_remaining = _x( 'Unlimited', 'quiz attempts remaining', 'lifterlms' );
 
 		}
 
@@ -533,8 +565,9 @@ class LLMS_Quiz {
 	/**
 	 * answer question form post (next lesson / complete quiz button click)
 	 * inserts answer in database and adds it to current quiz session
-	 *
 	 * @return void
+	 * @since    1.0.0
+	 * @version  3.4.1
 	 */
 	public static function answer_question( $quiz_id, $question_id, $question_type, $answer, $complete ) {
 
@@ -654,19 +687,41 @@ class LLMS_Quiz {
 						do_action( 'lifterlms_quiz_completed', $quiz->user_id, $quiz_data[ $id ] );
 
 						if ( $quiz_data[ $id ]['passed'] ) {
-							$lesson = new LLMS_Lesson( $quiz->assoc_lesson );
-							$lesson->mark_complete( $quiz->user_id, true );
 
+							$passed = true;
 							do_action( 'lifterlms_quiz_passed', $quiz->user_id, $quiz_data[ $id ] );
+
 						} else {
+
+							$passed = false;
 							do_action( 'lifterlms_quiz_failed', $quiz->user_id, $quiz_data[ $id ] );
+
 						}
+
+						// mark lesson complete
+						$lesson = llms_get_post( $quiz->assoc_lesson );
+						$passing_required = ( 'yes' === $lesson->get( 'require_passing_grade' ) );
+						if ( ! $passing_required || ( $passing_required && $passed ) ) {
+
+							// mark associated lesson complete only if it hasn't been completed before
+							$student = new LLMS_Student( $quiz->user_id );
+							if ( ! $student->is_complete( $quiz->assoc_lesson, 'lesson' ) ) {
+								llms_mark_complete( $quiz->user_id, $quiz->assoc_lesson, 'lesson', 'quiz_' . $quiz->id );
+							}
+
+						}
+
 						update_user_meta( $quiz->user_id, 'llms_quiz_data', $quiz_data );
 						LLMS()->session->set( 'llms_quiz', $quiz );
 
 					}
 
 				}
+
+				// clear "cached" grade so it's recalced next time it's requested
+				$student = new LLMS_Student( $quiz->user_id );
+				$student->set( 'overall_grade', '' );
+
 			} else {
 
 				$response['message'] = __( 'There was an error with your quiz.', 'lifterlms' );
@@ -769,73 +824,7 @@ class LLMS_Quiz {
 	 * @return string time difference
 	 */
 	private function get_date_diff( $time1, $time2, $precision = 2 ) {
-		// If not numeric then convert timestamps
-		if ( ! is_int( $time1 ) ) {
-			$time1 = strtotime( $time1 );
-		}
-		if ( ! is_int( $time2 ) ) {
-			$time2 = strtotime( $time2 );
-		}
-		// If time1 > time2 then swap the 2 values
-		if ( $time1 > $time2 ) {
-			list( $time1, $time2 ) = array( $time2, $time1 );
-		}
-		// Set up intervals and diffs arrays
-		$intervals = array( 'year', 'month', 'day', 'hour', 'minute', 'second' );
-		$l18n_singular = array(
-			'year' => __( 'year', 'lifterlms' ),
-			'month' => __( 'month', 'lifterlms' ),
-			'day' => __( 'day', 'lifterlms' ),
-			'hour' => __( 'hour', 'lifterlms' ),
-			'minute' => __( 'minute', 'lifterlms' ),
-			'second' => __( 'second', 'lifterlms' ),
-		);
-		$l18n_plural = array(
-			'year' => __( 'years', 'lifterlms' ),
-			'month' => __( 'months', 'lifterlms' ),
-			'day' => __( 'days', 'lifterlms' ),
-			'hour' => __( 'hours', 'lifterlms' ),
-			'minute' => __( 'minutes', 'lifterlms' ),
-			'second' => __( 'seconds', 'lifterlms' ),
-		);
-		$diffs = array();
-		foreach ( $intervals as $interval ) {
-			// Create temp time from time1 and interval
-			$ttime = strtotime( '+1 ' . $interval, $time1 );
-			// Set initial values
-			$add = 1;
-			$looped = 0;
-			// Loop until temp time is smaller than time2
-			while ( $time2 >= $ttime ) {
-				// Create new temp time from time1 and interval
-				$add++;
-				$ttime = strtotime( '+' . $add . ' ' . $interval, $time1 );
-				$looped++;
-			}
-			$time1 = strtotime( '+' . $looped . ' ' . $interval, $time1 );
-			$diffs[ $interval ] = $looped;
-		}
-		$count = 0;
-		$times = array();
-		foreach ( $diffs as $interval => $value ) {
-			// Break if we have needed precission
-			if ( $count >= $precision ) {
-				break;
-			}
-			// Add value and interval if value is bigger than 0
-			if ( $value > 0 ) {
-				if ( $value != 1 ) {
-					$text = $l18n_plural[ $interval ];
-				} else {
-					$text = $l18n_singular[ $interval ];
-				}
-				// Add value and interval to times array
-				$times[] = $value . ' ' . $text;
-				$count++;
-			}
-		}
-		// Return string with times
-		return implode( ', ', $times );
+		return llms_get_date_diff( $time1, $time2, $precision );
 	}
 
 }

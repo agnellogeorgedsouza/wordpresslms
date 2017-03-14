@@ -2,14 +2,19 @@
 
 N2Loader::import('libraries.plugins.N2SliderItemAbstract', 'smartslider');
 
-class N2SSPluginItemButton extends N2SSPluginItemAbstract
-{
+class N2SSPluginItemButton extends N2SSPluginItemAbstract {
 
     public $_identifier = 'button';
 
     protected $priority = 4;
 
     private static $font = 1103;
+
+    protected $group = 'Basic';
+
+    protected $layerProperties = array(
+        "inneralign" => "center"
+    );
 
     public function __construct() {
         $this->_title = n2_x('Button', 'Slide item');
@@ -99,13 +104,13 @@ class N2SSPluginItemButton extends N2SSPluginItemAbstract
         self::initDefaultStyle();
 
         return array(
-            'content'      => n2_('MORE'),
-            'nowrap'       => 1,
-            'fullwidth'    => 0,
-            'link'         => '#|*|_self',
-            'font'         => self::$font,
-            'style'        => self::$style,
-            'class'        => ''
+            'content'   => n2_('MORE'),
+            'nowrap'    => 1,
+            'fullwidth' => 0,
+            'link'      => '#|*|_self',
+            'font'      => self::$font,
+            'style'     => self::$style,
+            'class'     => ''
         );
     }
 
@@ -129,6 +134,11 @@ class N2SSPluginItemButton extends N2SSPluginItemAbstract
         $data->set('font', $import->fixSection($data->get('font')));
         $data->set('style', $import->fixSection($data->get('style')));
         $data->set('link', $import->fixLightbox($data->get('link')));
+        return $data;
+    }
+
+    public function prepareFixed($data) {
+        $data->set('link', $this->fixLightbox($data->get('link')));
         return $data;
     }
 }

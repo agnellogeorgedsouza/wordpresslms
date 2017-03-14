@@ -299,7 +299,7 @@ class N2SmartsliderGeneratorModel extends N2Model
     }
 
     public function get($id) {
-        return $this->db->queryRow("SELECT * FROM " . $this->db->tableName . " WHERE id = :id", array(
+        return $this->db->queryRow("SELECT * FROM " . $this->getTable() . " WHERE id = :id", array(
             ":id" => $id
         ));
     }
@@ -348,7 +348,7 @@ class N2SmartsliderGeneratorModel extends N2Model
     public function getSliderId($generatorId) {
 
         $slidesModal = new N2SmartsliderSlidesModel();
-        $slideData   = $this->db->queryRow("SELECT slider FROM " . $slidesModal->db->tableName . " WHERE generator_id = :id", array(
+        $slideData   = $this->db->queryRow("SELECT slider FROM " . $slidesModal->getTable() . " WHERE generator_id = :id", array(
             ":id" => $generatorId
         ));
 

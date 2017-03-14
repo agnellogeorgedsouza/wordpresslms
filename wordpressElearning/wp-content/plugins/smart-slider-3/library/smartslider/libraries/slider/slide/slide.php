@@ -73,6 +73,10 @@ class N2SmartSliderSlide {
         return $this->generator->getSlides();
     }
 
+    public function expandSlideAdmin() {
+        return $this->generator->getSlidesAdmin();
+    }
+
     public function fillSample() {
         if ($this->hasGenerator()) {
             $this->generator->fillSample();
@@ -167,17 +171,24 @@ class N2SmartSliderSlide {
 
     protected function renderHtml() {
         if (empty($this->html)) {
+            $renderers = array();
 
-            $layerRenderer = new N2SmartSliderLayer($this->sliderObject, $this);
+            $renderers['layer'] = new N2SmartSliderLayer($this->sliderObject, $this, $renderers);
+            $renderers['group'] = new N2SmartSliderGroup($this->sliderObject, $this, $renderers);
 
-            $html   = '';
-            $layers = json_decode($this->slide, true);
+            $html     = '';
+            $children = json_decode($this->slide, true);
             if (!$this->underEdit) {
-                $layers = N2SmartSliderLayer::translateIds($layers);
+                // @TODO it does not work with groups, we should check it.
+                $children = N2SmartSliderLayer::translateIds($children);
             }
-            if (is_array($layers)) {
-                foreach ($layers AS $layer) {
-                    $html .= $layerRenderer->render($layer);
+            if (is_array($children)) {
+                foreach ($children AS $child) {
+                    if (isset($child['type'])) {
+                        $html .= $renderers[$child['type']]->render($child);
+                    } else {
+                        $html .= $renderers['layer']->render($child);
+                    }
                 }
             }
             $this->html = N2Html::tag('div', $this->containerAttributes, $html);
@@ -189,17 +200,23 @@ class N2SmartSliderSlide {
     }
 
     public function getAsStatic() {
+        $renderers = array();
 
-        $layerRenderer = new N2SmartSliderLayer($this->sliderObject, $this);
+        $renderers['layer'] = new N2SmartSliderLayer($this->sliderObject, $this, $renderers);
+        $renderers['group'] = new N2SmartSliderGroup($this->sliderObject, $this, $renderers);
 
-        $html   = '';
-        $layers = json_decode($this->slide, true);
+        $html     = '';
+        $children = json_decode($this->slide, true);
         if (!$this->underEdit) {
-            $layers = N2SmartSliderLayer::translateIds($layers);
+            $children = N2SmartSliderLayer::translateIds($children);
         }
-        if (is_array($layers)) {
-            foreach ($layers AS $layer) {
-                $html .= $layerRenderer->render($layer);
+        if (is_array($children)) {
+            foreach ($children AS $child) {
+                if (isset($child['type'])) {
+                    $html .= $renderers[$child['type']]->render($child);
+                } else {
+                    $html .= $renderers['layer']->render($child);
+                }
             }
         }
         return N2Html::tag('div', array('class' => 'n2-ss-static-slide'), $html);
@@ -212,9 +229,33 @@ class N2SmartSliderSlide {
         return false;
     }
 
+    private static function splitTokens($input) {
+        $tokens       = array();
+        $currentToken = "";
+        $nestingLevel = 0;
+        for ($i = 0; $i < strlen($input); $i++) {
+            $currentChar = $input[$i];
+            if ($currentChar === "," && $nestingLevel === 0) {
+                $tokens[]     = $currentToken;
+                $currentToken = "";
+            } else {
+                $currentToken .= $currentChar;
+                if ($currentChar === "(") {
+                    $nestingLevel++;
+                } else if ($currentChar === ")") {
+                    $nestingLevel--;
+                }
+            }
+        }
+        if (strlen($currentToken)) {
+            $tokens[] = $currentToken;
+        }
+        return $tokens;
+    }
+
     public function fill($value) {
         if (!empty($this->variables)) {
-            return preg_replace_callback('/{((([a-z]+)\(([0-9a-zA-Z_,\/\(\)]+)\))|([a-zA-Z0-9][a-zA-Z0-9_\/]*))}/', array(
+            return preg_replace_callback('/{((([a-z]+)\(([^}]+)\))|([a-zA-Z0-9][a-zA-Z0-9_\/]*))}/', array(
                 $this,
                 'parseFunction'
             ), $value);
@@ -224,13 +265,14 @@ class N2SmartSliderSlide {
 
     private function parseFunction($match) {
         if (!isset($match[5])) {
-            $args = preg_split('/,(?!.*\))/', $match[4]);
+            $args = self::splitTokens($match[4]);
             for ($i = 0; $i < count($args); $i++) {
                 $args[$i] = $this->parseVariable($args[$i]);
             }
+
             return call_user_func_array(array(
                 $this,
-                '__' . $match[3]
+                '_' . $match[3]
             ), $args);
 
         } else {
@@ -239,7 +281,12 @@ class N2SmartSliderSlide {
     }
 
     private function parseVariable($variable) {
-        preg_match('/((([a-z]+)\(([0-9a-zA-Z_,\/\(\)]+)\)))/', $variable, $match);
+        preg_match('/^("|\')(.*)("|\')$/', $variable, $match);
+        if (!empty($match)) {
+            return $match[2];
+        }
+
+        preg_match('/((([a-z]+)\(([^}]+)\)))/', $variable, $match);
         if (!empty($match)) {
             return call_user_func(array(
                 $this,
@@ -263,26 +310,34 @@ class N2SmartSliderSlide {
         }
     }
 
-    private function __cleanhtml($s) {
+    private function _fallback($s, $def) {
+        if (empty($s)) {
+            return $def;
+        }
+        return $s;
+    }
+
+    private function _cleanhtml($s) {
         return strip_tags($s, '<p><a><b><br><br/><i>');
     }
 
-    private function __removehtml($s) {
+    private function _removehtml($s) {
         return strip_tags($s);
     }
 
-    private function __splitbychars($s, $start, $length) {
+    private function _splitbychars($s, $start, $length) {
         return N2String::substr($s, $start, $length);
     }
 
-    private function __splitbywords($s, $start, $length) {
+    private function _splitbywords($s, $start, $length) {
         $len      = N2String::strlen($s);
         $posStart = max(0, $start == 0 ? 0 : N2String::strpos($s, ' ', $start));
         $posEnd   = max(0, $length > $len ? $len : N2String::strpos($s, ' ', $length));
+        if($posEnd == 0 && $length <= $len) $posEnd = $len;
         return N2String::substr($s, $posStart, $posEnd);
     }
 
-    private function __findimage($s, $index) {
+    private function _findimage($s, $index) {
         $index = isset($index) ? intval($index) - 1 : 0;
         preg_match_all('/(<img.*?src=[\'"](.*?)[\'"][^>]*>)|(background(-image)??\s*?:.*?url\((["|\']?)?(.+?)(["|\']?)?\))/i', $s, $r);
         if (isset($r[2]) && !empty($r[2][$index])) {
@@ -295,7 +350,7 @@ class N2SmartSliderSlide {
         return $s;
     }
 
-    private function __findlink($s, $index) {
+    private function _findlink($s, $index) {
         $index = isset($index) ? intval($index) - 1 : 0;
         preg_match_all('/href=["\']?([^"\'>]+)["\']?/i', $s, $r);
         if (isset($r[1]) && !empty($r[1][$index])) {
@@ -305,8 +360,8 @@ class N2SmartSliderSlide {
         }
         return $s;
     }
-    
-    private function __removevarlink($s) {
+
+    private function _removevarlink($s) {
         return preg_replace('/<a href=\"(.*?)\">(.*?)<\/a>/', '', $s);
     }
 
@@ -385,16 +440,23 @@ class N2SmartSliderSlide {
     }
 
     public function getFilledSlide() {
-        $layerRenderer = new N2SmartSliderLayer($this->sliderObject, $this);
+        $renderers = array();
+
+        $renderers['layer'] = new N2SmartSliderLayer($this->sliderObject, $this, $renderers);
+        $renderers['group'] = new N2SmartSliderGroup($this->sliderObject, $this, $renderers);
 
         $rawSlide = array();
-        $layers   = json_decode($this->slide, true);
+        $children = json_decode($this->slide, true);
         if (!$this->underEdit) {
-            $layers = N2SmartSliderLayer::translateIds($layers);
+            $children = N2SmartSliderLayer::translateIds($children);
         }
-        if (is_array($layers)) {
-            foreach ($layers AS $layer) {
-                $rawSlide[] = $layerRenderer->getFilled($layer);
+        if (is_array($children)) {
+            foreach ($children AS $child) {
+                if (isset($child['type'])) {
+                    $rawSlide[] = $renderers[$child['type']]->getFilled($child);
+                } else {
+                    $rawSlide[] = $renderers['layer']->getFilled($child);
+                }
             }
         }
         return json_encode($rawSlide);

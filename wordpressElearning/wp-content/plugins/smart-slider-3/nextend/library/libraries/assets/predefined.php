@@ -21,7 +21,7 @@ class N2AssetsPredefined {
         N2Localization::addJS(array(
             'Cancel',
             'Delete',
-            'Delete and never show again',
+            'Delete and never ask for confirmation again',
             'Are you sure you want to delete?',
             'Documentation'
         ));
